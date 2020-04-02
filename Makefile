@@ -6,7 +6,7 @@ CC = gcc
 
 COMPILER_FLAGS =
 
-LINKER_FLAGS = -ldl
+LINKER_FLAGS = -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lglfw3 -lm
 
 INCLUDE_FLAGS = -I/home/arebel/development/tools/glfw/include -I/home/arebel/development/tools/glad/include
 
