@@ -2,7 +2,7 @@ OBJS = glad.c hello.cpp
 
 OBJ_NAME = hello
 
-CC = gcc
+CC = g++
 
 COMPILER_FLAGS =
 
@@ -12,3 +12,4 @@ INCLUDE_FLAGS = -I/home/arebel/development/tools/glfw/include -I/home/arebel/dev
 
 all: $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(INCLUDE_FLAGS) $(LINKER_FLAGS) -o output/$(OBJ_NAME)
+	output/$(OBJ_NAME)
