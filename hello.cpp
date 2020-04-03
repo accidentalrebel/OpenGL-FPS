@@ -102,11 +102,16 @@ int main()
 	// --------------------------------
 	// Configuration
 	// --------------------------------
+	// NOTE:
+	// Vertex Buffer Objects (VBO) - Can store large number of vertices into the GPUs memory
+	// Vertex Array Objects (VAO) - This helps in storing vertex calls so we don't have to do those calls again
+	// Element Buffer Objcets (EBO) - Stores indices to help decide which vertices to draw. In the example, it made drawing two adjacent triangles use less vertex points
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
+	// Any subsequent vertex attribute calls from this point on will be stored inside the VAO
 	glBindVertexArray(VAO);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -119,6 +124,8 @@ int main()
 	glEnableVertexAttribArray(0);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// We unbind the VAO vertex array so it is not overwritten
 	glBindVertexArray(0);
 	
 	while(!glfwWindowShouldClose(window))
