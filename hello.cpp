@@ -139,14 +139,6 @@ int main()
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
 
-	// Transformation test
-	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-	vec = trans * vec;
-	std::cout << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
-
-	
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -161,13 +153,21 @@ int main()
 		float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
 
 		// Rotation and scaling test
-		trans = glm::mat4(1.0f);
-		trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.5));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
-		
-		unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0, 0.0, 0.0));
+		int modelLoc = glGetUniformLocation(shader.ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		int viewLoc = glGetUniformLocation(shader.ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+		int projectionLoc = glGetUniformLocation(shader.ID, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
