@@ -125,8 +125,6 @@ int main()
 	// We unbind the VAO vertex array so it is not overwritten
 	glBindVertexArray(0);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
@@ -176,6 +174,10 @@ int main()
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
 
+	// Settings
+	glEnable(GL_DEPTH_TEST);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -184,7 +186,7 @@ int main()
 		// Drawing
 		// --------------------------------
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float timeValue = glfwGetTime();
 		float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
