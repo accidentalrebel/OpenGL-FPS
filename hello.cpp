@@ -13,6 +13,13 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+float cameraSpeed = 2.5f;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 glm::vec3 cubePositions[] = {
   glm::vec3( 0.0f,  0.0f,  0.0f), 
   glm::vec3( 2.0f,  5.0f, -15.0f), 
@@ -232,13 +239,8 @@ int main()
 		// glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
 		// glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
-		const float radius = 10.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
 		glm::mat4 view;
-		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ),
-											 glm::vec3(0.0f, 0.0f, 0.0f),
-											 glm::vec3(0.0f, 1.0f, 0.0f));
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		
 		// glm::mat4 view = glm::mat4(1.0f);
 		// view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -252,6 +254,10 @@ int main()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 	}
 
 	glDeleteVertexArrays(1, &VAO);
@@ -272,5 +278,21 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
+	}
+	if ( glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		cameraPos += cameraSpeed * deltaTime * cameraFront;
+	}
+	else if ( glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		cameraPos -= cameraSpeed * deltaTime * cameraFront;
+	}
+	if ( glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS)
+	{
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+	}
+	else if ( glfwGetKey(window, GLFW_KEY_RIGHT ) == GLFW_PRESS)
+	{
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
 	}
 }
