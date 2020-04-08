@@ -11,6 +11,7 @@
 #include "stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow *window);
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -19,6 +20,9 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 float cameraSpeed = 2.5f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+float pitch = 0, yaw = -90.0f;
+float lastX = 400, lastY = 300;
+bool gFirstMouse = true;
 
 glm::vec3 cubePositions[] = {
   glm::vec3( 0.0f,  0.0f,  0.0f), 
@@ -105,6 +109,8 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	// Shader
 	Shader shader("shader.vs", "shader.fs");
@@ -279,20 +285,52 @@ void processInput(GLFWwindow *window)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	if ( glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if ( glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS)
 	{
 		cameraPos += cameraSpeed * deltaTime * cameraFront;
 	}
-	else if ( glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	else if ( glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
 		cameraPos -= cameraSpeed * deltaTime * cameraFront;
 	}
-	if ( glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS)
+	if ( glfwGetKey(window, GLFW_KEY_O ) == GLFW_PRESS)
 	{
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
 	}
-	else if ( glfwGetKey(window, GLFW_KEY_RIGHT ) == GLFW_PRESS)
+	else if ( glfwGetKey(window, GLFW_KEY_U ) == GLFW_PRESS)
 	{
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
 	}
+}
+
+void mouse_callback(GLFWwindow* window, double xPos, double yPos)
+{
+	if ( gFirstMouse )
+	{
+		lastX = xPos;
+		lastY = yPos;
+		gFirstMouse = false;
+	}
+	float xOffset = xPos - lastX;
+	float yOffset = lastY - yPos;
+	lastX = xPos;
+	lastY = yPos;
+
+	const float sensitivity = 0.05f;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	yaw += xOffset;
+	pitch += yOffset;
+
+	if ( pitch > 89.0f )
+		pitch = 89.0f;
+	else if ( pitch < -89.0f )
+		pitch = -89.0f;
+
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(direction);
 }
