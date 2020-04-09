@@ -17,7 +17,7 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
 
-Camera g_camera(glm::vec3(2.0f, 0.0f, 2.0f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
@@ -25,10 +25,13 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const uint8_t mapCol = 5;
-const uint8_t mapRow = 5;
+const uint8_t mapRow = 8;
 
 uint8_t tileMap[] = {
-	1, 1, 1, 1, 1,
+ 	1, 1, 1, 1, 1,
+	1, 0, 0, 0, 1,
+	1, 2, 0, 2, 1,
+	1, 2, 0, 2, 1,
 	1, 2, 0, 2, 1,
 	1, 0, 0, 0, 1,
 	1, 2, 0, 2, 1,
@@ -285,11 +288,15 @@ void displayMap(Shader *shader)
 				continue;
 			}
 
-			uint8_t zPos = i / mapRow;
-			uint8_t xPos = (i - (mapCol * zPos));
+			// uint8_t zPos = i / mapRow;
+			// std::cout << unsigned(mapCol) << " * " << unsigned(zPos) << std::endl;
+			// uint8_t xPos = (i - (mapCol * zPos));
+			uint8_t zPos = floor(i / mapCol);
+			std::cout << unsigned(mapCol) << " * " << unsigned(zPos) << std::endl;
+			uint8_t xPos = i - (zPos * mapCol);
 
-			std::cout << "Tile " << unsigned(i) << ": " << unsigned(tile) << std::endl;
-			std::cout << "xPos " << unsigned(xPos) << " - zPos " << unsigned(zPos) << std::endl;
+			//std::cout << "Tile " << unsigned(i) << ": " << unsigned(tile) << std::endl;
+			std::cout << unsigned(i) << " (" << unsigned(xPos) << ", " << unsigned(zPos) << ")" << std::endl;
 						
  			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(xPos, 0, zPos));
