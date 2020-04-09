@@ -60,19 +60,9 @@ class Camera
 		return glm::lookAt(Position, Position + Front, Up);
 	}
 
-	void ProcessKeyboard(Camera_Movement direction, float velocity)
+	void UpdatePosition(glm::vec3 position)
 	{
-		//float velocity = MovementSpeed * deltaTime;
-					
-		if (direction == FORWARD)
-			Position += Front * velocity;
-		if (direction == BACKWARD)
-			Position -= Front * velocity;
-		if (direction == LEFT)
-			Position -= Right * velocity;
-		if (direction == RIGHT)
-			Position += Right * velocity;
-
+		Position = position;
 		Position.y = 0.0;
 	}
 

@@ -336,25 +336,38 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	glm::vec3 currentPosition = g_camera.Position;
 	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
-	bool canStep = true;
-	glm::vec3 currentPosition = g_camera.Position;
+	bool keyPressed = false;
 	
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
+		keyPressed = true;
 		currentPosition += g_camera.Front * stepDistance;
-		if ( canMoveToPosition(currentPosition) ) 
-			g_camera.Position = currentPosition;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
-		g_camera.ProcessKeyboard(BACKWARD, deltaTime);
+	{
+		keyPressed = true;
+		currentPosition -= g_camera.Front * stepDistance;
+	}
 
 	if ( glfwGetKey(window, GLFW_KEY_A ) == GLFW_PRESS)
-		g_camera.ProcessKeyboard(LEFT, deltaTime);
+	{
+		keyPressed = true;		
+		currentPosition -= g_camera.Right * stepDistance;
+	}
+	else if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
+	{
+		keyPressed = true;		
+		currentPosition += g_camera.Right * stepDistance;
+	}
 
-	if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
-		g_camera.ProcessKeyboard(RIGHT, deltaTime);
+	if ( keyPressed )
+	{
+		if ( canMoveToPosition(currentPosition) ) 
+			g_camera.UpdatePosition(currentPosition);
+	}
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
