@@ -60,9 +60,9 @@ class Camera
 		return glm::lookAt(Position, Position + Front, Up);
 	}
 
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+	void ProcessKeyboard(Camera_Movement direction, float velocity)
 	{
-		float velocity = MovementSpeed * deltaTime;
+		//float velocity = MovementSpeed * deltaTime;
 					
 		if (direction == FORWARD)
 			Position += Front * velocity;

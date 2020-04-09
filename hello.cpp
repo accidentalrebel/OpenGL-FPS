@@ -325,7 +325,27 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
-		g_camera.ProcessKeyboard(FORWARD, deltaTime);
+	{
+		// float velocity = MovementSpeed * deltaTime;
+		float movementSpeed = 2.5f;
+		float stepDistance = deltaTime * movementSpeed;
+
+		bool canStep = true;
+		if ( stepDistance )
+		{
+			glm::vec3 pos = g_camera.Position;
+			pos += g_camera.Front * stepDistance;
+			if ( pos.x > 2 - 0.6 && pos.x < 2 + 0.6
+					 && pos.z > 0 - 0.6 && pos.z < 0 + 0.6 ) {
+				canStep = false;
+			}
+		}
+		// Check if moving forward will put us into an invalid position
+		if ( canStep )
+		{
+			g_camera.ProcessKeyboard(FORWARD, stepDistance);
+		}
+	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 		g_camera.ProcessKeyboard(BACKWARD, deltaTime);
 
