@@ -16,6 +16,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
+void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
+bool canMoveToPosition(glm::vec3 currentPosition);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
@@ -24,8 +26,8 @@ bool g_firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-const uint8_t mapCol = 5;
-const uint8_t mapRow = 8;
+const uint8_t g_mapCol = 5;
+const uint8_t g_mapRow = 8;
 
 uint8_t tileMap[] = {
  	1, 1, 1, 1, 1,
@@ -287,31 +289,22 @@ int main()
 
 void displayMap(Shader *shader)
 {
-		for(uint8_t i = 0; i < mapCol * mapRow ; i++)
-		{
-			uint8_t tile = tileMap[i];
-			if ( tile <= 0 )
-			{
-				continue;
-			}
+	glm::vec3 position;
+	for(uint8_t i = 0; i < g_mapCol * g_mapRow ; i++)
+	{
+		uint8_t tile = tileMap[i];
+		if ( tile <= 0 )
+			continue;
 
-			// uint8_t zPos = i / mapRow;
-			// std::cout << unsigned(mapCol) << " * " << unsigned(zPos) << std::endl;
-			// uint8_t xPos = (i - (mapCol * zPos));
-			uint8_t zPos = floor(i / mapCol);
-			std::cout << unsigned(mapCol) << " * " << unsigned(zPos) << std::endl;
-			uint8_t xPos = i - (zPos * mapCol);
+		getPositionFromTileIndex(i, &position);
 
-			//std::cout << "Tile " << unsigned(i) << ": " << unsigned(tile) << std::endl;
-			std::cout << unsigned(i) << " (" << unsigned(xPos) << ", " << unsigned(zPos) << ")" << std::endl;
-						
- 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(xPos, 0, zPos));
-			int modelLoc = glGetUniformLocation(shader->ID, "model");
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(position.x, 0, position.z));
+		int modelLoc = glGetUniformLocation(shader->ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -319,32 +312,40 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+bool canMoveToPosition(glm::vec3 currentPosition)
+{
+	glm::vec3 position;
+	for(uint8_t i = 0; i < g_mapCol * g_mapRow ; i++)
+	{
+		uint8_t tile = tileMap[i];
+		if ( tile <= 0 )
+			continue;
+			
+		getPositionFromTileIndex(i, &position);
+
+		if ( currentPosition.x > position.x - 0.6 && currentPosition.x < position.x + 0.6
+				 && currentPosition.z > position.z - 0.6 && currentPosition.z < position.z + 0.6 ) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	float movementSpeed = 2.5f;
+	float stepDistance = deltaTime * movementSpeed;	
+	bool canStep = true;
+	glm::vec3 currentPosition = g_camera.Position;
+	
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
-		// float velocity = MovementSpeed * deltaTime;
-		float movementSpeed = 2.5f;
-		float stepDistance = deltaTime * movementSpeed;
-
-		bool canStep = true;
-		if ( stepDistance )
-		{
-			glm::vec3 pos = g_camera.Position;
-			pos += g_camera.Front * stepDistance;
-			if ( pos.x > 2 - 0.6 && pos.x < 2 + 0.6
-					 && pos.z > 0 - 0.6 && pos.z < 0 + 0.6 ) {
-				canStep = false;
-			}
-		}
-		// Check if moving forward will put us into an invalid position
-		if ( canStep )
-		{
-			g_camera.ProcessKeyboard(FORWARD, stepDistance);
-		}
+		currentPosition += g_camera.Front * stepDistance;
+		if ( canMoveToPosition(currentPosition) ) 
+			g_camera.Position = currentPosition;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 		g_camera.ProcessKeyboard(BACKWARD, deltaTime);
@@ -376,3 +377,11 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 {
 	g_camera.ProcessMouseScroll(yOffset);
 }
+
+// HELPERS ====
+void getPositionFromTileIndex(uint8_t index, glm::vec3 *position)
+{
+	position->z = floor(index / g_mapCol);
+	position->x = index - (position->z * g_mapCol);
+}
+
