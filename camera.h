@@ -63,7 +63,6 @@ class Camera
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
 		float velocity = MovementSpeed * deltaTime;
-		float t = Position.y;
 					
 		if (direction == FORWARD) {
 			Position += Front * velocity;
@@ -75,7 +74,7 @@ class Camera
 		if (direction == RIGHT)
 			Position += Right * velocity;
 
-		Position.y = t;
+		Position.y = 0.0;
 	}
 
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)

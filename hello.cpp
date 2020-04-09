@@ -17,13 +17,23 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
 
-Camera g_camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 2.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+const uint8_t mapCol = 5;
+const uint8_t mapRow = 5;
+
+uint8_t tileMap[] = {
+	1, 1, 1, 1, 1,
+	1, 2, 0, 2, 1,
+	1, 0, 0, 0, 1,
+	1, 2, 0, 2, 1,
+	1, 1, 1, 1, 1,
+};
 glm::vec3 cubePositions[] = {
   glm::vec3( 0.0f, 0,  0.0f), 
   glm::vec3( 2.0f, 0, -15.0f), 
@@ -267,10 +277,22 @@ int main()
 
 void displayMap(Shader *shader)
 {
-		for(unsigned int i = 0; i < 10 ; i++)
+		for(uint8_t i = 0; i < mapCol * mapRow ; i++)
 		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
+			uint8_t tile = tileMap[i];
+			if ( tile <= 0 )
+			{
+				continue;
+			}
+
+			uint8_t zPos = i / mapRow;
+			uint8_t xPos = (i - (mapCol * zPos));
+
+			std::cout << "Tile " << unsigned(i) << ": " << unsigned(tile) << std::endl;
+			std::cout << "xPos " << unsigned(xPos) << " - zPos " << unsigned(zPos) << std::endl;
+						
+ 			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(xPos, 0, zPos));
 			int modelLoc = glGetUniformLocation(shader->ID, "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
