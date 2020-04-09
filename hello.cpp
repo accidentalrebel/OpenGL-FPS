@@ -367,6 +367,8 @@ void processInput(GLFWwindow *window)
 	{
 		if ( canMoveToPosition(currentPosition) ) 
 			g_camera.UpdatePosition(currentPosition);
+		else
+			g_camera.Position += glm::vec3(0, 0, -1) * stepDistance;
 	}
 }
 
