@@ -64,9 +64,8 @@ class Camera
 	{
 		float velocity = MovementSpeed * deltaTime;
 					
-		if (direction == FORWARD) {
+		if (direction == FORWARD)
 			Position += Front * velocity;
-		}
 		if (direction == BACKWARD)
 			Position -= Front * velocity;
 		if (direction == LEFT)

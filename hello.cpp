@@ -83,21 +83,21 @@ float vertices[] = {
      0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
      0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
 
-		// Bottom face
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		// // Bottom face
+    // -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    //  0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+    //  0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    //  0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    // -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    // -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		// Top face
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		// // Top face
+    // -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    //  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    //  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    //  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    // -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    // -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 // unsigned int indices[] = {
 // 	0, 1, 3,
@@ -326,7 +326,6 @@ void processInput(GLFWwindow *window)
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 		g_camera.ProcessKeyboard(FORWARD, deltaTime);
-
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 		g_camera.ProcessKeyboard(BACKWARD, deltaTime);
 
