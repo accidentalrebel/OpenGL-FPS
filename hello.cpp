@@ -229,6 +229,7 @@ int main()
 
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
+		//projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 		int projectionLoc = glGetUniformLocation(shader.ID, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -402,27 +403,28 @@ void castRay()
 	// float dtZ = distanceFromWallZ / rayDirection.z;
 	// std::cout << "dt: " << dtX << ", " << dtZ << std::endl;
 
-	if ( rayDirection.z > rayDirection.x )
-	{
+	// if ( rayDirection.z > rayDirection.x )
+	// {
 		g_markerPosX = currentPosition.x + (distanceFromWallX * rayDirection.x / rayDirection.z);
-		g_markerPosZ = currentPosition.z + (distanceFromWallZ);
-	}
-	else
-	{
-		g_markerPosX = currentPosition.x + (distanceFromWallX);
-		g_markerPosZ = currentPosition.z + (distanceFromWallZ * rayDirection.z / rayDirection.x);
-	}
+		if ( rayDirection.z > 0 )
+			g_markerPosZ = currentPosition.z + (distanceFromWallZ);
+	// }
+	// else
+	// {
+	// 	g_markerPosX = currentPosition.x + (distanceFromWallX);
+	// 	g_markerPosZ = currentPosition.z + (distanceFromWallZ * rayDirection.z / rayDirection.x);
+	// }
 
-	if ( rayDirection.x < -0.71 )
-	{
-		g_markerPosX = currentPosition.x - (distanceFromWallX);
-		g_markerPosZ = currentPosition.z - (distanceFromWallZ * rayDirection.z / rayDirection.x);
-	}
-	if ( rayDirection.z < -0.71 )
-	{
-		g_markerPosX = currentPosition.x - (distanceFromWallX * rayDirection.x / rayDirection.z);
-		g_markerPosZ = currentPosition.z - (distanceFromWallZ);
-	}
+	// if ( rayDirection.x < -0.71 )
+	// {
+	// 	g_markerPosX = currentPosition.x - (distanceFromWallX);
+	// 	g_markerPosZ = currentPosition.z - (distanceFromWallZ * rayDirection.z / rayDirection.x);
+	// }
+	// if ( rayDirection.z < -0.71 )
+	// {
+	// 	g_markerPosX = currentPosition.x - (distanceFromWallX * rayDirection.x / rayDirection.z);
+	// 	g_markerPosZ = currentPosition.z - (distanceFromWallZ);
+	// }
 
 		
 	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;

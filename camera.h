@@ -22,6 +22,7 @@ const float PITCH = 0.0f;
 const float SPEED = 2.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
+const float ZOOM_MAX = 90.0f;
 
 class Camera
 {
@@ -89,12 +90,12 @@ class Camera
 
 	void ProcessMouseScroll(float yoffset)
 	{
-		if (Zoom >= 1.0f && Zoom <= 45.0f)
+		if (Zoom >= 1.0f && Zoom <= ZOOM_MAX)
 			Zoom -= yoffset;
 		if (Zoom <= 1.0f)
 			Zoom = 1.0f;
-		if (Zoom >= 45.0f)
-			Zoom = 45.0f;
+		if (Zoom >= ZOOM_MAX)
+			Zoom = ZOOM_MAX;
 	}
 
 	glm::vec3 GetForward()
