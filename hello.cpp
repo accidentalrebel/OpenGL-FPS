@@ -402,9 +402,18 @@ void castRay()
 	// float dtZ = distanceFromWallZ / rayDirection.z;
 	// std::cout << "dt: " << dtX << ", " << dtZ << std::endl;
 
-	g_markerPosX = currentPosition.x + (distanceFromWallX * rayDirection.x / rayDirection.z);
-	g_markerPosZ = currentPosition.z + (distanceFromWallX);
+	if ( rayDirection.z > rayDirection.x )
+	{
+		g_markerPosX = currentPosition.x + (distanceFromWallX * rayDirection.x / rayDirection.z);
+		g_markerPosZ = currentPosition.z + (distanceFromWallZ);
+	}
+ 	else
+	{
+		g_markerPosX = currentPosition.x + (distanceFromWallX);
+		g_markerPosZ = currentPosition.z + (distanceFromWallZ * rayDirection.z / rayDirection.x);
+	}
 	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
+	
 
 	std::cout << std::endl;
 }
