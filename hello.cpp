@@ -19,9 +19,14 @@ void displayMap(Shader *shader);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 
+void castRay();
+
 Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
+
+float g_markerPosX = 0;
+float g_markerPosZ = 0;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -32,11 +37,11 @@ const uint8_t g_mapRow = 8;
 uint8_t tileMap[] = {
  	1, 1, 1, 1, 1,
 	1, 0, 0, 0, 1,
-	1, 2, 0, 2, 1,
-	1, 2, 0, 2, 1,
-	1, 2, 0, 2, 1,
 	1, 0, 0, 0, 1,
-	1, 2, 0, 2, 1,
+	1, 0, 0, 0, 1,
+	1, 0, 0, 0, 1,
+	1, 0, 0, 0, 1,
+	1, 0, 0, 0, 1,
 	1, 1, 1, 1, 1,
 };
 
@@ -293,18 +298,30 @@ void displayMap(Shader *shader)
 	for(uint8_t i = 0; i < g_mapCol * g_mapRow ; i++)
 	{
 		uint8_t tile = tileMap[i];
-		if ( tile <= 0 )
-			continue;
 
 		getPositionFromTileIndex(i, &position);
+		if ( tile <= 0 )
+		{
+			//continue;
+			position.y = -1.0f;
+		}	
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(position.x, 0, position.z));
+		model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
 		int modelLoc = glGetUniformLocation(shader->ID, "model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
+
+	// Marker
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(g_markerPosX, -0.5f, g_markerPosZ));
+	model = glm::scale(model, glm::vec3(0.1f));
+	int modelLoc = glGetUniformLocation(shader->ID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -363,13 +380,55 @@ void processInput(GLFWwindow *window)
 		currentPosition += g_camera.Right * stepDistance;
 	}
 
+	if ( glfwGetKey(window, GLFW_KEY_R ) == GLFW_PRESS)
+	{
+		castRay();
+	}
+
 	if ( keyPressed )
 	{
 		if ( canMoveToPosition(currentPosition) ) 
 			g_camera.UpdatePosition(currentPosition);
-		else
-			g_camera.Position += glm::vec3(0, 0, -1) * stepDistance;
+		// else
+		// 	g_camera.Position += glm::vec3(0, 0, -1) * stepDistance;
 	}
+}
+
+void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate)
+{
+	tileCoordinate->x = floor(currentPosition.x + centerOffset.x);
+	tileCoordinate->z = floor(currentPosition.z + centerOffset.z);
+}
+
+void castRay()
+{
+	glm::vec3 centerOffset;
+	centerOffset.x = 0.5f;
+	centerOffset.z = 0.5f;
+	
+	float tileSize = 1.0f;
+	glm::vec3 currentPosition = g_camera.Position;
+	glm::vec3 rayDirection = g_camera.Front;
+	std::cout << "Current pos: " << currentPosition.x << ", " << currentPosition.z << std::endl;
+	std::cout << "Ray direction: " << rayDirection.x << ", " << rayDirection.z << std::endl;
+	
+	glm::vec3 tileCoordinate;
+	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
+	std::cout << "Tile coordinate: " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
+
+	std::cout << "(" << tileCoordinate.x << " + 0.5f - " << currentPosition.x << ") / " << rayDirection.x << std::endl;
+	float dtX = (tileCoordinate.x + 0.5f - currentPosition.x) / rayDirection.x;
+	std::cout << "(" << tileCoordinate.z << " + 0.5f - " << currentPosition.z << ") / " << rayDirection.z << std::endl;
+	float dtZ = (tileCoordinate.z + 0.5f - currentPosition.z) / rayDirection.z;
+	std::cout << "DTs: " << dtX << ", " << dtZ << std::endl;
+
+	glm::vec3 forward = g_camera.GetForward();
+	g_markerPosX = currentPosition.x + forward.x; // * dtX);
+	g_markerPosZ = currentPosition.z + forward.z; //1.0f; //(g_camera.Front.z);// * dtZ);
+
+	std::cout << "Marker position: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
+
+	std::cout << std::endl;
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
@@ -397,6 +456,7 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *position)
 {
 	position->z = floor(index / g_mapCol);
+	position->y = 0;
 	position->x = index - (position->z * g_mapCol);
 }
 

@@ -95,6 +95,14 @@ class Camera
 			Zoom = 45.0f;
 	}
 
+	glm::vec3 GetForward()
+	{
+		glm::vec3 forward;
+		forward.x = cos(glm::radians(Yaw));
+		forward.z = sin(glm::radians(Yaw));
+		return forward;
+	}
+
  private:
 	void updateCameraVectors()
 	{
