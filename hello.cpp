@@ -21,7 +21,7 @@ bool canMoveToPosition(glm::vec3 currentPosition);
 
 void castRay();
 
-Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 4.75f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
@@ -405,8 +405,8 @@ void castRay()
 
 	// if ( rayDirection.z > rayDirection.x )
 	// {
-		g_markerPosX = currentPosition.x + (distanceFromWallX * rayDirection.x / rayDirection.z);
-		if ( rayDirection.z > 0 )
+		g_markerPosX = currentPosition.x + (distanceFromWallZ * rayDirection.x / rayDirection.z);
+		// if ( rayDirection.z > 0 )
 			g_markerPosZ = currentPosition.z + (distanceFromWallZ);
 	// }
 	// else
