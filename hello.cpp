@@ -399,37 +399,14 @@ void castRay()
 	float distanceFromWallZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z);
 	std::cout << "distanceFromWall: " << distanceFromWallX << ", " << distanceFromWallZ << std::endl;
 
-	// float dtX = distanceFromWallX / rayDirection.x;
-	// float dtZ = distanceFromWallZ / rayDirection.z;
-	// std::cout << "dt: " << dtX << ", " << dtZ << std::endl;
+	if ( rayDirection.z < 0 ) {
+		distanceFromWallZ -= 1.0f;
+	}
 
-	// if ( rayDirection.z > rayDirection.x )
-	// {
-		g_markerPosX = currentPosition.x + (distanceFromWallZ * rayDirection.x / rayDirection.z);
-		// if ( rayDirection.z > 0 )
-			g_markerPosZ = currentPosition.z + (distanceFromWallZ);
-	// }
-	// else
-	// {
-	// 	g_markerPosX = currentPosition.x + (distanceFromWallX);
-	// 	g_markerPosZ = currentPosition.z + (distanceFromWallZ * rayDirection.z / rayDirection.x);
-	// }
-
-	// if ( rayDirection.x < -0.71 )
-	// {
-	// 	g_markerPosX = currentPosition.x - (distanceFromWallX);
-	// 	g_markerPosZ = currentPosition.z - (distanceFromWallZ * rayDirection.z / rayDirection.x);
-	// }
-	// if ( rayDirection.z < -0.71 )
-	// {
-	// 	g_markerPosX = currentPosition.x - (distanceFromWallX * rayDirection.x / rayDirection.z);
-	// 	g_markerPosZ = currentPosition.z - (distanceFromWallZ);
-	// }
-
+	g_markerPosX = currentPosition.x + (distanceFromWallZ * rayDirection.x / rayDirection.z);
+	g_markerPosZ = currentPosition.z + distanceFromWallZ;
 		
 	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
-	
-
 	std::cout << std::endl;
 }
 
