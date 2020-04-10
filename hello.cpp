@@ -408,25 +408,13 @@ void castRay()
 	
 	float tileSize = 1.0f;
 	glm::vec3 currentPosition = g_camera.Position;
-	glm::vec3 rayDirection = g_camera.Front;
+	glm::vec3 rayDirection = g_camera.GetForward();
 	std::cout << "Current pos: " << currentPosition.x << ", " << currentPosition.z << std::endl;
 	std::cout << "Ray direction: " << rayDirection.x << ", " << rayDirection.z << std::endl;
 	
 	glm::vec3 tileCoordinate;
 	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
 	std::cout << "Tile coordinate: " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
-
-	std::cout << "(" << tileCoordinate.x << " + 0.5f - " << currentPosition.x << ") / " << rayDirection.x << std::endl;
-	float dtX = (tileCoordinate.x + 0.5f - currentPosition.x) / rayDirection.x;
-	std::cout << "(" << tileCoordinate.z << " + 0.5f - " << currentPosition.z << ") / " << rayDirection.z << std::endl;
-	float dtZ = (tileCoordinate.z + 0.5f - currentPosition.z) / rayDirection.z;
-	std::cout << "DTs: " << dtX << ", " << dtZ << std::endl;
-
-	glm::vec3 forward = g_camera.GetForward();
-	g_markerPosX = currentPosition.x + forward.x; // * dtX);
-	g_markerPosZ = currentPosition.z + forward.z; //1.0f; //(g_camera.Front.z);// * dtZ);
-
-	std::cout << "Marker position: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
 
 	std::cout << std::endl;
 }
