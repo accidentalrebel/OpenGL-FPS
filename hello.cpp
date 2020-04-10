@@ -394,8 +394,17 @@ void castRay()
 	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
 	std::cout << "Tile coordinate: " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
 
-	g_markerPosX = tileCoordinate.x + 1; //rayDirection.x; //tileCoordinate.x + 1;
-	g_markerPosZ = tileCoordinate.z;
+	float distanceFromWallX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x);
+	float distanceFromWallZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z);
+	std::cout << "distanceFromWall: " << distanceFromWallX << ", " << distanceFromWallZ << std::endl;
+
+	// float dtX = distanceFromWallX / rayDirection.x;
+	// float dtZ = distanceFromWallZ / rayDirection.z;
+	// std::cout << "dt: " << dtX << ", " << dtZ << std::endl;
+
+	g_markerPosX = currentPosition.x + (distanceFromWallX * rayDirection.x / rayDirection.z);
+	g_markerPosZ = currentPosition.z + (distanceFromWallX);
+	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
 
 	std::cout << std::endl;
 }
