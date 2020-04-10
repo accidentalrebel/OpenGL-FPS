@@ -293,8 +293,8 @@ void displayMap(Shader *shader)
 
 	// Marker
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(g_markerPosX, -0.5f, g_markerPosZ));
-	model = glm::scale(model, glm::vec3(0.05f));
+	model = glm::translate(model, glm::vec3(g_markerPosX, -0.26f, g_markerPosZ));
+	model = glm::scale(model, glm::vec3(0.04f, 0.5f, 0.04f));
 	int modelLoc = glGetUniformLocation(shader->ID, "model");
 	shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
