@@ -35,14 +35,14 @@ const uint8_t g_mapCol = 5;
 const uint8_t g_mapRow = 8;
 
 uint8_t tileMap[] = {
- 	1, 1, 1, 1, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 1, 1, 1, 1,
+ 	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
 };
 
 glm::vec3 cubePositions[] = {
@@ -98,13 +98,13 @@ float vertices[] = {
     // -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
     // -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		// // Top face
-    // -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    //  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    //  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    //  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    // -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    // -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		// Top face
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 // unsigned int indices[] = {
 // 	0, 1, 3,
@@ -189,28 +189,7 @@ int main()
 	stbi_set_flip_vertically_on_load(true);
 	
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
-	if ( data )
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture1" << std::endl;
-	}
- 	stbi_image_free(data);
-
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	data = stbi_load("assets/awesomeface.png", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load("assets/tile.png", &width, &height, &nrChannels, 0);
 	if ( data )
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -224,7 +203,6 @@ int main()
 
 	shader.use();
 	shader.setInt("texture1", 0);
-	shader.setInt("texture2", 1);
 
 	// Settings
 	glEnable(GL_DEPTH_TEST);
@@ -247,8 +225,6 @@ int main()
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(VAO);
 
 		glm::mat4 projection;
@@ -309,6 +285,7 @@ void displayMap(Shader *shader)
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
 		int modelLoc = glGetUniformLocation(shader->ID, "model");
+		shader->setVec4("tint", 1.0f, 1.0f, 1.0f, 1.0f);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -319,6 +296,7 @@ void displayMap(Shader *shader)
 	model = glm::translate(model, glm::vec3(g_markerPosX, -0.5f, g_markerPosZ));
 	model = glm::scale(model, glm::vec3(0.1f));
 	int modelLoc = glGetUniformLocation(shader->ID, "model");
+	shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -415,6 +393,9 @@ void castRay()
 	glm::vec3 tileCoordinate;
 	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
 	std::cout << "Tile coordinate: " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
+
+	g_markerPosX = tileCoordinate.x + 1; //rayDirection.x; //tileCoordinate.x + 1;
+	g_markerPosZ = tileCoordinate.z;
 
 	std::cout << std::endl;
 }
