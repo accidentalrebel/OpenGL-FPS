@@ -21,7 +21,7 @@ bool canMoveToPosition(glm::vec3 currentPosition);
 
 void castRay();
 
-Camera g_camera(glm::vec3(0.0f, 0.0f, 0.0f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
@@ -35,14 +35,14 @@ const uint8_t g_mapCol = 5;
 const uint8_t g_mapRow = 8;
 
 uint8_t tileMap[] = {
- 	0, 0, 0, 0, 0,
+ 	1, 1, 0, 1, 1,
+	1, 0, 0, 0, 1,
+	1, 0, 0, 0, 1,
 	0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
+	1, 0, 0, 0, 1,
+	1, 0, 0, 0, 1,
+	1, 1, 0, 1, 1,
 };
 
 glm::vec3 cubePositions[] = {
