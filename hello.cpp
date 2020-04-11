@@ -20,7 +20,7 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
-void castRay(float distance);
+bool castRay(glm::vec3, float);
 bool handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
@@ -347,24 +347,28 @@ void processInput(GLFWwindow *window)
 	
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
-		keyPressed = true;
 		currentPosition += g_camera.Front * stepDistance;
+		if ( !castRay(g_camera.Front, 0.5f) )
+			keyPressed = true;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 	{
-		keyPressed = true;
 		currentPosition -= g_camera.Front * stepDistance;
+		if ( !castRay(-g_camera.Front, 0.5f) )
+			keyPressed = true;
 	}
 
 	if ( glfwGetKey(window, GLFW_KEY_A ) == GLFW_PRESS)
 	{
-		keyPressed = true;		
 		currentPosition -= g_camera.Right * stepDistance;
+		if ( !castRay(-g_camera.Right, 0.4f))
+			keyPressed = true;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
 	{
-		keyPressed = true;		
 		currentPosition += g_camera.Right * stepDistance;
+		if ( !castRay(g_camera.Right, 0.4f))
+			keyPressed = true;
 	}
 
 	if ( glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_PRESS)
@@ -373,14 +377,13 @@ void processInput(GLFWwindow *window)
 	}
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
-		castRay(3);
+		castRay(g_camera.Front, 5);
 		g_lastKeyPressed = 0;
 	}
 
-	if ( keyPressed )
+	if ( keyPressed && canMoveToPosition(currentPosition))
 	{
-		if ( canMoveToPosition(currentPosition) ) 
-			g_camera.UpdatePosition(currentPosition);
+		g_camera.UpdatePosition(currentPosition);
 		// else
 		// 	g_camera.Position += glm::vec3(0, 0, -1) * stepDistance;
 	}
@@ -392,9 +395,8 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
-void castRay(float castDistance)
+bool castRay(glm::vec3 rayDirection, float castDistance)
 {
-	std::cout << "========================================================" << std::endl;
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
 	const float tileSize = 1.0f;
@@ -405,7 +407,6 @@ void castRay(float castDistance)
 	}
 	glm::vec3 startPosition = g_camera.Position;
 	glm::vec3 currentPosition = g_camera.Position;
-	glm::vec3 rayDirection = g_camera.GetForward();
 	glm::vec3 tileCoordinate;
 
 	int8_t dirSignX = rayDirection.x > 0 ? 1: -1;
@@ -436,17 +437,16 @@ void castRay(float castDistance)
 
 		float rayLength = glm::length(rayDirection * t);
  		if ( rayLength > castDistance ) {
-			std::cout << "rayLength: "  << rayLength << std::endl;
-			return;
+			return false;
 		}
 		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
-
 		
 		if ( handleObjectAtPos(g_markers[index]) )
-			return;
+			return true;
 
 		index++;
 	}
+	return false;
 }
 
 uint8_t getTileAt(uint8_t col, uint8_t row)
@@ -466,15 +466,10 @@ bool handleObjectAtPos(glm::vec3 raycastPosition)
 {
 	glm::vec3 tileCoordinate;
 	getTileCoords(raycastPosition, g_tileCenterOffset, &tileCoordinate);
-	std::cout << "rayCastPosition " << raycastPosition.x << ", " << raycastPosition.z << std::endl;
-	std::cout << "tileCoordinate " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
-	
 	uint8_t tile = getTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z));
 	if ( tile > 0 )
 	{
-		std::cout << "HIT!" << std::endl;
-		
-		setTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z), 0);
+		//setTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z), 0);
 		return true;
 	}
 	return false;
