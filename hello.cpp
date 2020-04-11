@@ -25,7 +25,7 @@ Camera g_camera(glm::vec3(0.0f, 0.0f, 0.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
-const uint8_t maxMarkerCount = 10;
+const uint8_t maxMarkerCount = 5;
 glm::vec3 g_markers[maxMarkerCount];
 
 float deltaTime = 0.0f;
@@ -378,8 +378,8 @@ void processInput(GLFWwindow *window)
 
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate)
 {
-	tileCoordinate->x = floor(currentPosition.x + centerOffset.x);
-	tileCoordinate->z = floor(currentPosition.z + centerOffset.z);
+	tileCoordinate->x = floor((currentPosition.x + centerOffset.x) / 1.0f);
+	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
 void castRay()
@@ -398,19 +398,23 @@ void castRay()
 	glm::vec3 rayDirection = g_camera.GetForward();
 	glm::vec3 tileCoordinate;
 
+	int8_t dirSignX = rayDirection.x > 0 ? 0: -1;
+	int8_t dirSignZ = rayDirection.z > 0 ? 0: -1;
+
 	uint8_t index = 0;
 	float t = 0;
+	
 	while( index < maxMarkerCount )
 	{
 		getTileCoords(currentPosition, centerOffset, &tileCoordinate);
 
-		float dtX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x) / rayDirection.x;
-		float dtZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z) / rayDirection.z;
+		float dtX = ((tileCoordinate.x + 1 + dirSignX) - (currentPosition.x + centerOffset.x)) / rayDirection.x;
+		float dtZ = ((tileCoordinate.z + 1 + dirSignZ) - (currentPosition.z + centerOffset.z)) / rayDirection.z;
 
 		if ( dtX < dtZ )
-			t = t + dtX;
+			t = t + dtX + 0.001f;
 		else
-			t = t + dtZ;
+			t = t + dtZ + 0.001f;
 
 		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
 		index++;
