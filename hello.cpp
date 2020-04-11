@@ -21,11 +21,12 @@ bool canMoveToPosition(glm::vec3 currentPosition);
 
 void castRay();
 
-Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
+Camera g_camera(glm::vec3(0.0f, 0.0f, 0.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
-glm::vec3 g_markerPos;
+const uint8_t maxMarkerCount = 10;
+glm::vec3 g_markers[maxMarkerCount];
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -291,15 +292,18 @@ void displayMap(Shader *shader)
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 
-	// Marker
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(g_markerPos.x, -0.26f, g_markerPos.z));
-	model = glm::scale(model, glm::vec3(0.04f, 0.5f, 0.04f));
-	int modelLoc = glGetUniformLocation(shader->ID, "model");
-	shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	// Markers
+	for ( uint8_t index = 0 ; index < maxMarkerCount ; ++index )
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(g_markers[index].x, -0.5f, g_markers[index].z));
+		model = glm::scale(model, glm::vec3(0.04f, 0.05f, 0.04f));
+		int modelLoc = glGetUniformLocation(shader->ID, "model");
+		shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -382,32 +386,34 @@ void castRay()
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
-
-	uint8_t count = 0;
-	float t = 0;
-
 	const float tileSize = 1.0f;
 	const glm::vec3 centerOffset = glm::vec3(0.5f, 0, 0.5f);
 
-	g_markerPos = g_camera.Position;
+	for ( uint8_t i = 0 ; i < maxMarkerCount ; ++i )
+	{
+		g_markers[i] = g_camera.Position;
+	}
 	glm::vec3 startPosition = g_camera.Position;
+	glm::vec3 currentPosition = g_camera.Position;
 	glm::vec3 rayDirection = g_camera.GetForward();
 	glm::vec3 tileCoordinate;
-	
-	while( count < 3 )
-	{
-		getTileCoords(g_markerPos, centerOffset, &tileCoordinate);
 
-		float dtX = (tileCoordinate.x + 1 - g_markerPos.x - centerOffset.x) / rayDirection.x;
-		float dtZ = (tileCoordinate.z + 1 - g_markerPos.z - centerOffset.z) / rayDirection.z;
+	uint8_t index = 0;
+	float t = 0;
+	while( index < maxMarkerCount )
+	{
+		getTileCoords(currentPosition, centerOffset, &tileCoordinate);
+
+		float dtX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x) / rayDirection.x;
+		float dtZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z) / rayDirection.z;
 
 		if ( dtX < dtZ )
 			t = t + dtX;
 		else
 			t = t + dtZ;
 
-		g_markerPos = startPosition + (rayDirection * t);
-		count++;
+		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
+		index++;
 	}
 }
 
