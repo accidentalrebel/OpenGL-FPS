@@ -382,24 +382,33 @@ void castRay()
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
-	glm::vec3 centerOffset;
-	centerOffset.x = 0.5f;
-	centerOffset.z = 0.5f;
-	
-	float tileSize = 1.0f;
-	glm::vec3 currentPosition = g_camera.Position;
+
+	uint8_t count = 0;
+	float t = 0;
+
+	const float tileSize = 1.0f;
+	const glm::vec3 centerOffset = glm::vec3(0.5f, 0, 0.5f);
+
+	g_markerPos = g_camera.Position;
+	glm::vec3 startPosition = g_camera.Position;
 	glm::vec3 rayDirection = g_camera.GetForward();
 	glm::vec3 tileCoordinate;
-	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
+	
+	while( count < 3 )
+	{
+		getTileCoords(g_markerPos, centerOffset, &tileCoordinate);
 
-	float dtX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x) / rayDirection.x;
-	float dtZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z) / rayDirection.z;
+		float dtX = (tileCoordinate.x + 1 - g_markerPos.x - centerOffset.x) / rayDirection.x;
+		float dtZ = (tileCoordinate.z + 1 - g_markerPos.z - centerOffset.z) / rayDirection.z;
 
-	float dtToUse = dtX;
-	if ( dtZ < dtX )
-		dtToUse = dtZ;
+		if ( dtX < dtZ )
+			t = t + dtX;
+		else
+			t = t + dtZ;
 
-	g_markerPos = currentPosition + (rayDirection * dtToUse); 
+		g_markerPos = startPosition + (rayDirection * t);
+		count++;
+	}
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
