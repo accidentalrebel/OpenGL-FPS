@@ -21,7 +21,7 @@ bool canMoveToPosition(glm::vec3 currentPosition);
 
 void castRay();
 
-Camera g_camera(glm::vec3(2.0f, 0.0f, 4.75f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
@@ -399,18 +399,20 @@ void castRay()
 	float distanceFromWallZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z);
 	std::cout << "distanceFromWall: " << distanceFromWallX << ", " << distanceFromWallZ << std::endl;
 
-	// if ( rayDirection.z < 0 ) {
-	// 	distanceFromWallZ -= 1.0f;
-	// }
-	// g_markerPosX = currentPosition.x + (distanceFromWallZ * rayDirection.x / rayDirection.z);
-	// g_markerPosZ = currentPosition.z + distanceFromWallZ;
+	float dtX = distanceFromWallX / rayDirection.x;
+	float dtZ = distanceFromWallZ / rayDirection.z;
+	std::cout << "dts: " << dtX << ", " << dtZ << std::endl;
 
-	if ( rayDirection.x < 0 ) {
-		distanceFromWallX -= 1.0f;
-	}
-	g_markerPosX = currentPosition.x + distanceFromWallX;
-	g_markerPosZ = currentPosition.z + (distanceFromWallX * rayDirection.z / rayDirection.x);
-		
+	float dtToUse = dtX;
+	if ( dtZ < dtX )
+		dtToUse = dtZ;
+
+	glm::vec3 adjustedPosition = glm::vec3(rayDirection.x * dtToUse, 0, rayDirection.z * dtToUse);
+	std::cout << "Adjusted pos: " << adjustedPosition.x << ", " << adjustedPosition.z << std::endl;
+
+	g_markerPosX = currentPosition.x + adjustedPosition.x;
+	g_markerPosZ = currentPosition.z + adjustedPosition.z;
+	
 	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
 	std::cout << std::endl;
 }
