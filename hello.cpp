@@ -20,7 +20,7 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
-void castRay();
+void castRay(float distance);
 bool handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
@@ -373,7 +373,7 @@ void processInput(GLFWwindow *window)
 	}
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
-		castRay();
+		castRay(3);
 		g_lastKeyPressed = 0;
 	}
 
@@ -392,7 +392,7 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
-void castRay()
+void castRay(float castDistance)
 {
 	std::cout << "========================================================" << std::endl;
 	// This link has helped me a lot in making this:
@@ -420,7 +420,6 @@ void castRay()
 	
 	while( index < maxMarkerCount )
 	{
-
 		float dtX = ((tileCoordinate.x + 1 + tileOffsetX) - (currentPosition.x + g_tileCenterOffset.x)) / rayDirection.x;
 		float dtZ = ((tileCoordinate.z + 1 + tileOffsetZ) - (currentPosition.z + g_tileCenterOffset.z)) / rayDirection.z;
 
@@ -435,9 +434,17 @@ void castRay()
 			tileCoordinate.z = tileCoordinate.z + dirSignZ;
 		}
 
+		float rayLength = glm::length(rayDirection * t);
+ 		if ( rayLength > castDistance ) {
+			std::cout << "rayLength: "  << rayLength << std::endl;
+			return;
+		}
 		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
+
+		
 		if ( handleObjectAtPos(g_markers[index]) )
 			return;
+
 		index++;
 	}
 }
