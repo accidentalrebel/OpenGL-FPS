@@ -27,6 +27,7 @@ void setTileAt(uint8_t col, uint8_t row, uint8_t value);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
+float g_lastKeyPressed = 0;
 bool g_firstMouse = true;
 
 const uint8_t maxMarkerCount = 10;
@@ -36,15 +37,18 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const glm::vec3 g_tileCenterOffset = glm::vec3(0.5f, 0, 0.5f);
-const uint8_t g_mapCol = 5;
+const uint8_t g_mapCol = 8;
 const uint8_t g_mapRow = 8;
 
 uint8_t tileMap[][g_mapRow] = {
  	{ 1, 1, 1, 0, 0, 0, 0, 0 },
 	{ 1, 0, 0, 0, 0, 1, 1, 0 },
-	{ 0, 0, 1, 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0, 1, 0, 0 },
 	{ 1, 0, 0, 0, 0, 1, 1, 0 },
-	{ 1, 1, 1, 0, 0, 0, 0, 0 },
+	{ 1, 1, 1, 0, 0, 1, 0, 0 },
+	{ 0, 0, 0, 0, 0, 1, 1, 0 },
+	{ 0, 1, 1, 0, 0, 1, 0, 0 },
+	{ 0, 0, 0, 0, 0, 0, 0, 1 },	
 };
 
 glm::vec3 cubePositions[] = {
@@ -365,7 +369,12 @@ void processInput(GLFWwindow *window)
 
 	if ( glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_PRESS)
 	{
+		g_lastKeyPressed = GLFW_KEY_PERIOD;
+	}
+	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
+	{
 		castRay();
+		g_lastKeyPressed = 0;
 	}
 
 	if ( keyPressed )
