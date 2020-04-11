@@ -25,8 +25,7 @@ Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
-float g_markerPosX = 0;
-float g_markerPosZ = 0;
+glm::vec3 g_markerPos;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -294,7 +293,7 @@ void displayMap(Shader *shader)
 
 	// Marker
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(g_markerPosX, -0.26f, g_markerPosZ));
+	model = glm::translate(model, glm::vec3(g_markerPos.x, -0.26f, g_markerPos.z));
 	model = glm::scale(model, glm::vec3(0.04f, 0.5f, 0.04f));
 	int modelLoc = glGetUniformLocation(shader->ID, "model");
 	shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
@@ -381,6 +380,8 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 
 void castRay()
 {
+	// This link has helped me a lot in making this:
+	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
 	glm::vec3 centerOffset;
 	centerOffset.x = 0.5f;
 	centerOffset.z = 0.5f;
@@ -388,33 +389,17 @@ void castRay()
 	float tileSize = 1.0f;
 	glm::vec3 currentPosition = g_camera.Position;
 	glm::vec3 rayDirection = g_camera.GetForward();
-	std::cout << "Current pos: " << currentPosition.x << ", " << currentPosition.z << std::endl;
-	std::cout << "Ray direction: " << rayDirection.x << ", " << rayDirection.z << std::endl;
-	
 	glm::vec3 tileCoordinate;
 	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
-	std::cout << "Tile coordinate: " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
 
-	float distanceFromWallX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x);
-	float distanceFromWallZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z);
-	std::cout << "distanceFromWall: " << distanceFromWallX << ", " << distanceFromWallZ << std::endl;
-
-	float dtX = distanceFromWallX / rayDirection.x;
-	float dtZ = distanceFromWallZ / rayDirection.z;
-	std::cout << "dts: " << dtX << ", " << dtZ << std::endl;
+	float dtX = (tileCoordinate.x + 1 - currentPosition.x - centerOffset.x) / rayDirection.x;
+	float dtZ = (tileCoordinate.z + 1 - currentPosition.z - centerOffset.z) / rayDirection.z;
 
 	float dtToUse = dtX;
 	if ( dtZ < dtX )
 		dtToUse = dtZ;
 
-	glm::vec3 adjustedPosition = glm::vec3(rayDirection.x * dtToUse, 0, rayDirection.z * dtToUse);
-	std::cout << "Adjusted pos: " << adjustedPosition.x << ", " << adjustedPosition.z << std::endl;
-
-	g_markerPosX = currentPosition.x + adjustedPosition.x;
-	g_markerPosZ = currentPosition.z + adjustedPosition.z;
-	
-	std::cout << "markerPos: " << g_markerPosX << ", " << g_markerPosZ << std::endl;
-	std::cout << std::endl;
+	g_markerPos = currentPosition + (rayDirection * dtToUse); 
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
