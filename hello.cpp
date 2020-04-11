@@ -18,10 +18,11 @@ void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
+void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
 void castRay();
 
-Camera g_camera(glm::vec3(2.0f, 0.0f, 5.0f));
+Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
 bool g_firstMouse = true;
 
@@ -31,18 +32,16 @@ glm::vec3 g_markers[maxMarkerCount];
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+const glm::vec3 g_tileCenterOffset = glm::vec3(0.5f, 0, 0.5f);
 const uint8_t g_mapCol = 5;
 const uint8_t g_mapRow = 8;
 
-uint8_t tileMap[] = {
- 	1, 1, 0, 1, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	1, 0, 0, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 1, 0, 1, 1,
+uint8_t tileMap[][g_mapRow] = {
+ 	{ 1, 1, 1, 0, 0, 0, 0, 0 },
+	{ 1, 0, 0, 0, 0, 1, 1, 0 },
+	{ 0, 0, 1, 0, 0, 0, 0, 0 },
+	{ 1, 0, 0, 0, 0, 1, 1, 0 },
+	{ 1, 1, 1, 0, 0, 0, 0, 0 },
 };
 
 glm::vec3 cubePositions[] = {
@@ -272,24 +271,26 @@ int main()
 void displayMap(Shader *shader)
 {
 	glm::vec3 position;
-	for(uint8_t i = 0; i < g_mapCol * g_mapRow ; i++)
+	for(uint8_t row = 0; row < g_mapRow ; row++)
 	{
-		uint8_t tile = tileMap[i];
-
-		getPositionFromTileIndex(i, &position);
-		if ( tile <= 0 )
+		for (uint8_t col = 0; col < g_mapCol ; col++)
 		{
-			//continue;
-			position.y = -1.0f;
-		}	
+			float yPos = 0.0f;
+			uint8_t tile = tileMap[col][row];
+			if ( tile <= 0 )
+			{
+				//continue;
+				yPos = -1.0f;
+			}	
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
-		int modelLoc = glGetUniformLocation(shader->ID, "model");
-		shader->setVec4("tint", 1.0f, 1.0f, 1.0f, 1.0f);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(col, yPos, row));
+			int modelLoc = glGetUniformLocation(shader->ID, "model");
+			shader->setVec4("tint", 1.0f, 1.0f, 1.0f, 1.0f);
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 	}
 
 	// Markers
@@ -313,20 +314,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 bool canMoveToPosition(glm::vec3 currentPosition)
 {
-	glm::vec3 position;
-	for(uint8_t i = 0; i < g_mapCol * g_mapRow ; i++)
-	{
-		uint8_t tile = tileMap[i];
-		if ( tile <= 0 )
-			continue;
+	glm::vec3 tileCoordinate;
+	getTileCoords(currentPosition, g_tileCenterOffset, &tileCoordinate);
+	uint8_t tile = tileMap[unsigned(tileCoordinate.x)][unsigned(tileCoordinate.z)];
+	if ( tile <= 0 )
+		return true;
 			
-		getPositionFromTileIndex(i, &position);
-
-		if ( currentPosition.x > position.x - 0.6 && currentPosition.x < position.x + 0.6
-				 && currentPosition.z > position.z - 0.6 && currentPosition.z < position.z + 0.6 ) {
-			return false;
-		}
+	if ( (currentPosition.x > tileCoordinate.x - g_tileCenterOffset.x && currentPosition.x < tileCoordinate.z + g_tileCenterOffset.z)
+ 			 && (currentPosition.z > tileCoordinate.z - g_tileCenterOffset.x && currentPosition.z < tileCoordinate.z + g_tileCenterOffset.z )) {
+		return false;
 	}
+
 	return true;
 }
 
@@ -387,7 +385,6 @@ void castRay()
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
 	const float tileSize = 1.0f;
-	const glm::vec3 centerOffset = glm::vec3(0.5f, 0, 0.5f);
 
 	for ( uint8_t i = 0 ; i < maxMarkerCount ; ++i )
 	{
@@ -403,7 +400,7 @@ void castRay()
 	int8_t tileOffsetX = rayDirection.x > 0 ? 0: -1;
 	int8_t tileOffsetZ = rayDirection.z > 0 ? 0: -1;
 
-	getTileCoords(currentPosition, centerOffset, &tileCoordinate);
+	getTileCoords(currentPosition, g_tileCenterOffset, &tileCoordinate);
 	
 	uint8_t index = 0;
 	float t = 0;
@@ -411,8 +408,8 @@ void castRay()
 	while( index < maxMarkerCount )
 	{
 
-		float dtX = ((tileCoordinate.x + 1 + tileOffsetX) - (currentPosition.x + centerOffset.x)) / rayDirection.x;
-		float dtZ = ((tileCoordinate.z + 1 + tileOffsetZ) - (currentPosition.z + centerOffset.z)) / rayDirection.z;
+		float dtX = ((tileCoordinate.x + 1 + tileOffsetX) - (currentPosition.x + g_tileCenterOffset.x)) / rayDirection.x;
+		float dtZ = ((tileCoordinate.z + 1 + tileOffsetZ) - (currentPosition.z + g_tileCenterOffset.z)) / rayDirection.z;
 
 		if ( dtX < dtZ )
 		{
