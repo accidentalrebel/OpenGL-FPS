@@ -21,6 +21,9 @@ bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
 void castRay();
+bool handleObjectAtPos(glm::vec3);
+uint8_t getTileAt(uint8_t col, uint8_t row);
+void setTileAt(uint8_t col, uint8_t row, uint8_t value);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
@@ -382,6 +385,7 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 
 void castRay()
 {
+	std::cout << "========================================================" << std::endl;
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
 	const float tileSize = 1.0f;
@@ -413,18 +417,51 @@ void castRay()
 
 		if ( dtX < dtZ )
 		{
-			t = t + dtX;
+			t = t + dtX + 0.001;
 			tileCoordinate.x = tileCoordinate.x + dirSignX;
 		}
 		else
 		{
-			t = t + dtZ;
+			t = t + dtZ + 0.001;
 			tileCoordinate.z = tileCoordinate.z + dirSignZ;
 		}
 
 		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
+		if ( handleObjectAtPos(g_markers[index]) )
+			return;
 		index++;
 	}
+}
+
+uint8_t getTileAt(uint8_t col, uint8_t row)
+{
+	if ( col >= g_mapCol || row >= g_mapRow )
+		return 0;
+	
+	return tileMap[col][row];
+}
+
+void setTileAt(uint8_t col, uint8_t row, uint8_t value)
+{
+	tileMap[col][row] = value;
+}
+
+bool handleObjectAtPos(glm::vec3 raycastPosition)
+{
+	glm::vec3 tileCoordinate;
+	getTileCoords(raycastPosition, g_tileCenterOffset, &tileCoordinate);
+	std::cout << "rayCastPosition " << raycastPosition.x << ", " << raycastPosition.z << std::endl;
+	std::cout << "tileCoordinate " << tileCoordinate.x << ", " << tileCoordinate.z << std::endl;
+	
+	uint8_t tile = getTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z));
+	if ( tile > 0 )
+	{
+		std::cout << "HIT!" << std::endl;
+		
+		setTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z), 0);
+		return true;
+	}
+	return false;
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
