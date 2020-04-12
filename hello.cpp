@@ -344,31 +344,36 @@ void processInput(GLFWwindow *window)
 	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
-	
+	glm::vec3 direction = glm::vec3(0.0);
+
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
-		currentPosition += g_camera.Front * stepDistance;
-		if ( !castRay(g_camera.Front, 0.5f) )
-			keyPressed = true;
+		direction += g_camera.Front;
+		keyPressed = true;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 	{
-		currentPosition -= g_camera.Front * stepDistance;
-		if ( !castRay(-g_camera.Front, 0.5f) )
-			keyPressed = true;
+		direction += -g_camera.Front;
+		keyPressed = true;
 	}
 
 	if ( glfwGetKey(window, GLFW_KEY_A ) == GLFW_PRESS)
 	{
-		currentPosition -= g_camera.Right * stepDistance;
-		if ( !castRay(-g_camera.Right, 0.4f))
-			keyPressed = true;
+		direction += -g_camera.Right;
+		keyPressed = true;
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
 	{
-		currentPosition += g_camera.Right * stepDistance;
-		if ( !castRay(g_camera.Right, 0.4f))
-			keyPressed = true;
+		direction += g_camera.Right;
+		keyPressed = true;
+	}
+
+	if ( keyPressed )
+	{
+		direction = glm::normalize(direction);
+		currentPosition += direction * stepDistance;
+		if ( !castRay(direction, 0.5f) && canMoveToPosition(currentPosition))
+			g_camera.UpdatePosition(currentPosition);
 	}
 
 	if ( glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_PRESS)
@@ -379,13 +384,6 @@ void processInput(GLFWwindow *window)
 	{
 		castRay(g_camera.Front, 5);
 		g_lastKeyPressed = 0;
-	}
-
-	if ( keyPressed && canMoveToPosition(currentPosition))
-	{
-		g_camera.UpdatePosition(currentPosition);
-		// else
-		// 	g_camera.Position += glm::vec3(0, 0, -1) * stepDistance;
 	}
 }
 
