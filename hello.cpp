@@ -339,6 +339,19 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 	return true;
 }
 
+bool canMove(glm::vec3 currentPosition,glm::vec3 rayHit, bool cutZ)
+{
+	if ( cutZ && currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
+	{
+		return false;
+	}
+	else if ( !cutZ && currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
+	{
+		return false;
+	}
+	return true;
+}
+
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -355,48 +368,44 @@ void processInput(GLFWwindow *window)
 	{
 		direction += g_camera.Front;
 		glm::vec3 rayHit = castRay(startPosition, direction, 0.5f);
-		glm::vec3 rayHitRight = castRay(startPosition + (g_camera.Right * 0.25f), direction, 0.5f);
-		glm::vec3 rayHitLeft = castRay(startPosition + (-g_camera.Right * 0.25f), direction, 0.5f);
-		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))))
+		glm::vec3 rayHitRight = castRay(startPosition + (g_camera.Right * 0.25f), direction, 0.25f);
+		glm::vec3 rayHitLeft = castRay(startPosition + (-g_camera.Right * 0.25f), direction, 0.25f);
+
+		std::cout << "==================" << std::endl;
+		if ( !canMove(currentPosition, rayHit, true) )
 		{
-			std::cout << "Cannot move further." << std::endl;
-			if ( currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
-			{
-				std::cout << "Cutting z." << std::endl;				
-				direction.z = 0;
-			}
-			else if ( currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
-			{
-				std::cout << "Cutting x." << std::endl;				
-				direction.x = 0;
-			}
+			direction.z = 0;
+			std::cout << "HERE1" << std::endl;
 		}
-		else if ( glm::any(glm::greaterThan(rayHitRight, glm::vec3(0))))
+		else if ( !canMove(currentPosition, rayHit, false) )
 		{
-			if ( currentPosition.x > rayHitRight.x - 0.75f && currentPosition.x < rayHitRight.x + 0.75f )
-			{
-				std::cout << "Cutting z." << std::endl;				
-				direction.z = 0;
-			}
-			else if ( currentPosition.z > rayHitRight.z - 0.75f && currentPosition.z < rayHitRight.z + 0.75f )
-			{
-				std::cout << "Cutting x." << std::endl;				
-				direction.x = 0;
-			}
+			direction.x = 0;
+			std::cout << "HERE2" << std::endl;
 		}
-		else if ( glm::any(glm::greaterThan(rayHitLeft, glm::vec3(0))))
-		{
-			if ( currentPosition.x > rayHitLeft.x - 0.75f && currentPosition.x < rayHitLeft.x + 0.75f )
-			{
-				std::cout << "Cutting z." << std::endl;				
-				direction.z = 0;
-			}
-			else if ( currentPosition.z > rayHitLeft.z - 0.75f && currentPosition.z < rayHitLeft.z + 0.75f )
-			{
-				std::cout << "Cutting x." << std::endl;				
-				direction.x = 0;
-			}
-		}
+
+		// if ( direction.z == 0 && !canMove(currentPosition, rayHitRight, false) )
+		// {
+		// 	direction.x = 0;
+		// 	std::cout << "HERE3" << std::endl;
+		// }
+		// else if ( direction.x == 0 && !canMove(currentPosition, rayHitLeft, true) )
+		// {
+		// 	direction.z = 0;
+		// 	std::cout << "HERE4" << std::endl;
+		// }
+		
+		// if ( !canMove(currentPosition, rayHitRight, true) && !canMove(currentPosition, rayHitRight, false)
+		// 		 && !canMove(currentPosition, rayHitLeft,true) && !canMove(currentPosition, rayHitLeft, false))
+		// {
+		// 	direction.x = 0;
+		// 	direction.z = 0;
+		// 	std::cout << "HERE3" << std::endl;
+		// }
+		// else if (!canMove(currentPosition, rayHitRight)
+		// 				 || !canMove(currentPosition, rayHitLeft))
+		// {
+		// 	direction.z = 0;
+		// }
 
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
