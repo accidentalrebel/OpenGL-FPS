@@ -20,7 +20,7 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
-glm::vec3 castRay(glm::vec3, glm::vec3, float);
+glm::vec3 castRay(glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
@@ -331,24 +331,11 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 	if ( tile <= 0 )
 		return true;
 			
-	if ( (currentPosition.x > tileCoordinate.x - g_tileCenterOffset.x && currentPosition.x < tileCoordinate.x + g_tileCenterOffset.x)
- 			 && (currentPosition.z > tileCoordinate.z - g_tileCenterOffset.z && currentPosition.z < tileCoordinate.z + g_tileCenterOffset.z )) {
+	if ( (currentPosition.x > tileCoordinate.x - g_tileCenterOffset.x && currentPosition.x < tileCoordinate.z + g_tileCenterOffset.z)
+ 			 && (currentPosition.z > tileCoordinate.z - g_tileCenterOffset.x && currentPosition.z < tileCoordinate.z + g_tileCenterOffset.z )) {
 		return false;
 	}
 
-	return true;
-}
-
-bool canMove(glm::vec3 currentPosition,glm::vec3 rayHit, bool cutZ)
-{
-	if ( cutZ && currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
-	{
-		return false;
-	}
-	else if ( !cutZ && currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
-	{
-		return false;
-	}
 	return true;
 }
 
@@ -358,7 +345,6 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	glm::vec3 startPosition = g_camera.Position;
 	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
@@ -367,43 +353,21 @@ void processInput(GLFWwindow *window)
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
 		direction += g_camera.Front;
-		glm::vec3 rayHit = castRay(startPosition, direction, 0.5f);
-
-		std::cout << "==================" << std::endl;
-		if ( !canMove(currentPosition, rayHit, true) )
+		glm::vec3 rayHit = castRay(direction, 0.5f);
+		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
 		{
-			direction.z = 0;
-			std::cout << "HERE1" << std::endl;
+			std::cout << "Cannot move further." << std::endl;
+			if ( currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
+			{
+				std::cout << "Cutting z." << std::endl;				
+				direction.z = 0;
+			}
+			else if ( currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
+			{
+				std::cout << "Cutting x." << std::endl;				
+				direction.x = 0;
+			}
 		}
-		else if ( !canMove(currentPosition, rayHit, false) )
-		{
-			direction.x = 0;
-			std::cout << "HERE2" << std::endl;
-		}
-
-		// if ( direction.z == 0 && !canMove(currentPosition, rayHitRight, false) )
-		// {
-		// 	direction.x = 0;
-		// 	std::cout << "HERE3" << std::endl;
-		// }
-		// else if ( direction.x == 0 && !canMove(currentPosition, rayHitLeft, true) )
-		// {
-		// 	direction.z = 0;
-		// 	std::cout << "HERE4" << std::endl;
-		// }
-		
-		// if ( !canMove(currentPosition, rayHitRight, true) && !canMove(currentPosition, rayHitRight, false)
-		// 		 && !canMove(currentPosition, rayHitLeft,true) && !canMove(currentPosition, rayHitLeft, false))
-		// {
-		// 	direction.x = 0;
-		// 	direction.z = 0;
-		// 	std::cout << "HERE3" << std::endl;
-		// }
-		// else if (!canMove(currentPosition, rayHitRight)
-		// 				 || !canMove(currentPosition, rayHitLeft))
-		// {
-		// 	direction.z = 0;
-		// }
 
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
@@ -432,7 +396,7 @@ void processInput(GLFWwindow *window)
 	{
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
-		if ( glm::all(glm::equal(castRay(startPosition, direction, 0.5f), glm::vec3()))
+		if ( glm::all(glm::equal(castRay(direction, 0.5f), glm::vec3()))
 				 && canMoveToPosition(currentPosition))
 			g_camera.UpdatePosition(currentPosition);
 	}
@@ -443,7 +407,7 @@ void processInput(GLFWwindow *window)
 	}
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
-		castRay(startPosition, g_camera.Front, 5);
+		castRay(g_camera.Front, 5);
 		g_lastKeyPressed = 0;
 	}
 }
@@ -454,7 +418,7 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
-glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDistance)
+glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
@@ -464,7 +428,8 @@ glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDis
 	{
 		g_markers[i] = g_camera.Position;
 	}
-	glm::vec3 currentPosition = startPosition;
+	glm::vec3 startPosition = g_camera.Position;
+	glm::vec3 currentPosition = g_camera.Position;
 	glm::vec3 tileCoordinate;
 
 	int8_t dirSignX = rayDirection.x > 0 ? 1: -1;
