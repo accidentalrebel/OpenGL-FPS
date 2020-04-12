@@ -106,7 +106,7 @@ class Camera
 		return forward;
 	}
 
- private:
+ // private:
 	void updateCameraVectors()
 	{
 		glm::vec3 front;

@@ -292,6 +292,7 @@ void displayMap(Shader *shader)
 
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(col, yPos, row));
+			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 			int modelLoc = glGetUniformLocation(shader->ID, "model");
 			shader->setVec4("tint", 1.0f, 1.0f, 1.0f, 1.0f);
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -305,7 +306,7 @@ void displayMap(Shader *shader)
 	{
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(g_markers[index].x, -0.5f, g_markers[index].z));
-		model = glm::scale(model, glm::vec3(0.04f, 0.05f, 0.04f));
+		model = glm::scale(model, glm::vec3(0.04f, 0.1f, 0.04f));
 		int modelLoc = glGetUniformLocation(shader->ID, "model");
 		shader->setVec4("tint", 1.0f, 0.0f, 0.0f, 1.0f);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -345,7 +346,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	float movementSpeed = 2.5f;
+	float movementSpeed = 1.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
 	glm::vec3 direction = glm::vec3(0.0);
@@ -356,13 +357,16 @@ void processInput(GLFWwindow *window)
 		glm::vec3 rayHit = castRay(direction, 0.5f);
 		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
 		{
-			std::cout << "Cannot move further." << std::endl;
-			if ( currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
+			std::cout << "Cannot move further." << rayHit.x << "," << rayHit.z << std::endl;
+			if ( currentPosition.x > rayHit.x - 1.0f && currentPosition.x < rayHit.x + 1.0f )
 			{
 				std::cout << "Cutting z." << std::endl;				
-				direction.z = 0;
+				// direction.z = -0.01f;
+				direction.z = 0;o
+				g_camera.Yaw -= 0.1f;
+				g_camera.updateCameraVectors();
 			}
-			else if ( currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
+			else if ( currentPosition.z > rayHit.z - 0.6f && currentPosition.z < rayHit.z + 0.6f )
 			{
 				std::cout << "Cutting x." << std::endl;				
 				direction.x = 0;
