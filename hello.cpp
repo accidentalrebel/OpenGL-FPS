@@ -353,7 +353,7 @@ void processInput(GLFWwindow *window)
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
-		direction += g_camera.Front;
+		direction += g_camera.GetForward();
 		glm::vec3 rayHit = castRay(direction, 0.5f);
 		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
 		{
@@ -362,11 +362,11 @@ void processInput(GLFWwindow *window)
 			{
 				std::cout << "Cutting z." << std::endl;				
 				// direction.z = -0.01f;
-				direction.z = 0;o
-				g_camera.Yaw -= 0.1f;
-				g_camera.updateCameraVectors();
+				direction.z = 0;
+				// g_camera.Yaw += 0.1f;
+				// g_camera.updateCameraVectors();
 			}
-			else if ( currentPosition.z > rayHit.z - 0.6f && currentPosition.z < rayHit.z + 0.6f )
+			else if ( currentPosition.z > rayHit.z - 1.0f && currentPosition.z < rayHit.z + 1.0f )
 			{
 				std::cout << "Cutting x." << std::endl;				
 				direction.x = 0;
