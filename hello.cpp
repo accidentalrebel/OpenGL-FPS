@@ -331,8 +331,8 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 	if ( tile <= 0 )
 		return true;
 			
-	if ( (currentPosition.x > tileCoordinate.x - g_tileCenterOffset.x && currentPosition.x < tileCoordinate.z + g_tileCenterOffset.z)
- 			 && (currentPosition.z > tileCoordinate.z - g_tileCenterOffset.x && currentPosition.z < tileCoordinate.z + g_tileCenterOffset.z )) {
+	if ( (currentPosition.x > tileCoordinate.x - g_tileCenterOffset.x && currentPosition.x < tileCoordinate.x + g_tileCenterOffset.x)
+ 			 && (currentPosition.z > tileCoordinate.z - g_tileCenterOffset.z && currentPosition.z < tileCoordinate.z + g_tileCenterOffset.z )) {
 		return false;
 	}
 
@@ -368,8 +368,6 @@ void processInput(GLFWwindow *window)
 	{
 		direction += g_camera.Front;
 		glm::vec3 rayHit = castRay(startPosition, direction, 0.5f);
-		glm::vec3 rayHitRight = castRay(startPosition + (g_camera.Right * 0.25f), direction, 0.25f);
-		glm::vec3 rayHitLeft = castRay(startPosition + (-g_camera.Right * 0.25f), direction, 0.25f);
 
 		std::cout << "==================" << std::endl;
 		if ( !canMove(currentPosition, rayHit, true) )
