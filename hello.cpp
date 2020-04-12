@@ -353,7 +353,27 @@ void processInput(GLFWwindow *window)
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
 		direction += g_camera.Front;
-		keyPressed = true;
+		glm::vec3 rayHit = castRay(direction, 0.5f);
+		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
+		{
+			std::cout << "Cannot move further." << std::endl;
+			if ( currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
+			{
+				std::cout << "Cutting z." << std::endl;				
+				direction.z = 0;
+			}
+			else if ( currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
+			{
+				std::cout << "Cutting x." << std::endl;				
+				direction.x = 0;
+			}
+		}
+
+		direction = glm::normalize(direction);
+		currentPosition += direction * stepDistance;
+
+		if( canMoveToPosition(currentPosition))
+			g_camera.UpdatePosition(currentPosition);
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 	{
