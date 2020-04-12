@@ -20,8 +20,8 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
-bool castRay(glm::vec3, float);
-bool handleObjectAtPos(glm::vec3);
+glm::vec3 castRay(glm::vec3, float);
+glm::vec3 handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
 
@@ -376,7 +376,8 @@ void processInput(GLFWwindow *window)
 	{
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
-		if ( !castRay(direction, 0.5f) && canMoveToPosition(currentPosition))
+		if ( glm::all(glm::equal(castRay(direction, 0.5f), glm::vec3()))
+				 && canMoveToPosition(currentPosition))
 			g_camera.UpdatePosition(currentPosition);
 	}
 
@@ -397,7 +398,7 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
-bool castRay(glm::vec3 rayDirection, float castDistance)
+glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
@@ -439,16 +440,17 @@ bool castRay(glm::vec3 rayDirection, float castDistance)
 
 		float rayLength = glm::length(rayDirection * t);
  		if ( rayLength > castDistance ) {
-			return false;
+			return glm::vec3();
 		}
 		g_markers[index] = currentPosition = startPosition + (rayDirection * t);
-		
-		if ( handleObjectAtPos(g_markers[index]) )
-			return true;
+
+		glm::vec3 raycastHit = handleObjectAtPos(g_markers[index]);
+		if ( glm::any(glm::notEqual(raycastHit, glm::vec3())) )
+			return raycastHit;
 
 		index++;
 	}
-	return false;
+	return glm::vec3();
 }
 
 uint8_t getTileAt(uint8_t col, uint8_t row)
@@ -464,7 +466,7 @@ void setTileAt(uint8_t col, uint8_t row, uint8_t value)
 	tileMap[col][row] = value;
 }
 
-bool handleObjectAtPos(glm::vec3 raycastPosition)
+glm::vec3 handleObjectAtPos(glm::vec3 raycastPosition)
 {
 	glm::vec3 tileCoordinate;
 	getTileCoords(raycastPosition, g_tileCenterOffset, &tileCoordinate);
@@ -472,9 +474,9 @@ bool handleObjectAtPos(glm::vec3 raycastPosition)
 	if ( tile > 0 )
 	{
 		//setTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z), 0);
-		return true;
+		return tileCoordinate;
 	}
-	return false;
+	return glm::vec3();
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
