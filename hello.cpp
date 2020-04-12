@@ -20,7 +20,7 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
 
-glm::vec3 castRay(glm::vec3, float);
+glm::vec3 castRay(glm::vec3, glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
@@ -345,6 +345,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
+	glm::vec3 startPosition = g_camera.Position;
 	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
@@ -353,8 +354,10 @@ void processInput(GLFWwindow *window)
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
 		direction += g_camera.Front;
-		glm::vec3 rayHit = castRay(direction, 0.5f);
-		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
+		glm::vec3 rayHit = castRay(startPosition, direction, 0.5f);
+		glm::vec3 rayHitRight = castRay(startPosition + (g_camera.Right * 0.25f), direction, 0.5f);
+		glm::vec3 rayHitLeft = castRay(startPosition + (-g_camera.Right * 0.25f), direction, 0.5f);
+		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))))
 		{
 			std::cout << "Cannot move further." << std::endl;
 			if ( currentPosition.x > rayHit.x - 0.75f && currentPosition.x < rayHit.x + 0.75f )
@@ -363,6 +366,32 @@ void processInput(GLFWwindow *window)
 				direction.z = 0;
 			}
 			else if ( currentPosition.z > rayHit.z - 0.75f && currentPosition.z < rayHit.z + 0.75f )
+			{
+				std::cout << "Cutting x." << std::endl;				
+				direction.x = 0;
+			}
+		}
+		else if ( glm::any(glm::greaterThan(rayHitRight, glm::vec3(0))))
+		{
+			if ( currentPosition.x > rayHitRight.x - 0.75f && currentPosition.x < rayHitRight.x + 0.75f )
+			{
+				std::cout << "Cutting z." << std::endl;				
+				direction.z = 0;
+			}
+			else if ( currentPosition.z > rayHitRight.z - 0.75f && currentPosition.z < rayHitRight.z + 0.75f )
+			{
+				std::cout << "Cutting x." << std::endl;				
+				direction.x = 0;
+			}
+		}
+		else if ( glm::any(glm::greaterThan(rayHitLeft, glm::vec3(0))))
+		{
+			if ( currentPosition.x > rayHitLeft.x - 0.75f && currentPosition.x < rayHitLeft.x + 0.75f )
+			{
+				std::cout << "Cutting z." << std::endl;				
+				direction.z = 0;
+			}
+			else if ( currentPosition.z > rayHitLeft.z - 0.75f && currentPosition.z < rayHitLeft.z + 0.75f )
 			{
 				std::cout << "Cutting x." << std::endl;				
 				direction.x = 0;
@@ -396,7 +425,7 @@ void processInput(GLFWwindow *window)
 	{
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
-		if ( glm::all(glm::equal(castRay(direction, 0.5f), glm::vec3()))
+		if ( glm::all(glm::equal(castRay(startPosition, direction, 0.5f), glm::vec3()))
 				 && canMoveToPosition(currentPosition))
 			g_camera.UpdatePosition(currentPosition);
 	}
@@ -407,7 +436,7 @@ void processInput(GLFWwindow *window)
 	}
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
-		castRay(g_camera.Front, 5);
+		castRay(startPosition, g_camera.Front, 5);
 		g_lastKeyPressed = 0;
 	}
 }
@@ -418,7 +447,7 @@ void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 
 	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
 }
 
-glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
+glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDistance)
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
@@ -428,8 +457,7 @@ glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
 	{
 		g_markers[i] = g_camera.Position;
 	}
-	glm::vec3 startPosition = g_camera.Position;
-	glm::vec3 currentPosition = g_camera.Position;
+	glm::vec3 currentPosition = startPosition;
 	glm::vec3 tileCoordinate;
 
 	int8_t dirSignX = rayDirection.x > 0 ? 1: -1;
