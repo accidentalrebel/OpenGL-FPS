@@ -323,6 +323,10 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 {
 	glm::vec3 tileCoordinate;
 	getTileCoords(currentPosition, g_tileCenterOffset, &tileCoordinate);
+
+	if ( tileCoordinate.x < 0 || tileCoordinate.z < 0 )
+		return false;
+	
 	uint8_t tile = tileMap[unsigned(tileCoordinate.x)][unsigned(tileCoordinate.z)];
 	if ( tile <= 0 )
 		return true;
