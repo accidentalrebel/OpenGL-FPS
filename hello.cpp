@@ -374,6 +374,22 @@ void processInput(GLFWwindow *window)
 				currentPosition.x -= (i - j);
 			}
 		}
+		else
+		{
+			glm::vec3 tileAtLeftPos = glm::vec3(playerCoord.x - 1, 0, playerCoord.z);
+			float tileAtLeft = getTileAt(unsigned(tileAtLeftPos.x), unsigned(tileAtLeftPos.z));
+			if ( tileAtLeft > 0 )
+			{
+				float i = currentPosition.x - playerPadding;
+				float j = tileAtLeftPos.x + g_tileCenterOffset.x;
+				if ( i < j )
+				{
+					std::cout << "There is a collission!" << std::endl;
+					currentPosition.x += (j - i);
+				}	
+			}
+		}
+		
 		
 		g_camera.UpdatePosition(currentPosition);
 	}
