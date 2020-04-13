@@ -344,10 +344,10 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	float movementSpeed = 1.5f;
+	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
-	float playerPadding = 0.5f;
+	float playerPadding = 0.25f;
 	glm::vec3 direction = glm::vec3(0.0);
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
@@ -361,16 +361,14 @@ void processInput(GLFWwindow *window)
 		currentPosition += direction * stepDistance;
 
 		// We then check if there are any collissions
-		// Let's check for x-axis collisions
 		glm::vec3 tileAtRightPos = glm::vec3(playerCoord.x + 1, 0, playerCoord.z);
 		float tileAtRight = getTileAt(unsigned(tileAtRightPos.x), unsigned(tileAtRightPos.z));
-		if ( tileAtRight > 0 ) // There is a tile
+		if ( direction.x > 0 && tileAtRight > 0 ) // There is a tile
 		{
 			float i = currentPosition.x + playerPadding;
 			float j = tileAtRightPos.x - g_tileCenterOffset.x;
 			if ( i > j )
 			{
-				std::cout << "A There is a collission!" << std::endl;
 				currentPosition.x -= (i - j);
 			}
 		}
@@ -378,13 +376,12 @@ void processInput(GLFWwindow *window)
 		{
 			glm::vec3 tileAtLeftPos = glm::vec3(playerCoord.x - 1, 0, playerCoord.z);
 			float tileAtLeft = getTileAt(unsigned(tileAtLeftPos.x), unsigned(tileAtLeftPos.z));
-			if ( tileAtLeft > 0 )
+			if ( direction.x < 0 && tileAtLeft > 0 )
 			{
 				float i = currentPosition.x - playerPadding;
 				float j = tileAtLeftPos.x + g_tileCenterOffset.x;
 				if ( i < j )
 				{
-					std::cout << "B There is a collission!" << std::endl;
 					currentPosition.x += (j - i);
 				}	
 			}
@@ -392,34 +389,32 @@ void processInput(GLFWwindow *window)
 
 		glm::vec3 tileAtTopPos = glm::vec3(playerCoord.x, 0, playerCoord.z - 1);
 		float tileAtTop = getTileAt(unsigned(tileAtTopPos.x), unsigned(tileAtTopPos.z));
-		if ( tileAtTop > 0 ) // There is a tile
+		if ( direction.z < 0 && tileAtTop > 0 ) // There is a tile
 		{
 			float i = currentPosition.z - playerPadding;
 			float j = tileAtTopPos.z + g_tileCenterOffset.z;
 			if ( i < j )
 			{
-				std::cout << "C There is a collission!" << std::endl;
 				currentPosition.z += (j - i);
 			}
 		}
 		else
 		{
 			glm::vec3 tileAtBottomPos = glm::vec3(playerCoord.x, 0, playerCoord.z + 1);
-			float tileAtBottom = getTileAt(unsigned(tileAtBottomPos.z), unsigned(tileAtBottomPos.z));
-			if ( tileAtBottom > 0 )
+			float tileAtBottom = getTileAt(unsigned(tileAtBottomPos.x), unsigned(tileAtBottomPos.z));
+			if ( direction.z > 0 && tileAtBottom > 0 )
 			{
 				float i = currentPosition.z + playerPadding;
 				float j = tileAtBottomPos.z - g_tileCenterOffset.z;
 				if ( i > j )
 				{
-					std::cout << "D There is a collission!" << std::endl;
 					currentPosition.z -= (i - j);
 				}	
 			}
 		}
 
-		
-		g_camera.UpdatePosition(currentPosition);
+		if ( canMoveToPosition(currentPosition )) // This is a final check to see if we are somewhere we are not supposed to
+				 g_camera.UpdatePosition(currentPosition);
 	}
 	
 	// if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
