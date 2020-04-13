@@ -18,8 +18,7 @@ void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
-void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate);
-
+glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset);
 glm::vec3 castRay(glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
@@ -322,9 +321,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 bool canMoveToPosition(glm::vec3 currentPosition)
 {
-	glm::vec3 tileCoordinate;
-	getTileCoords(currentPosition, g_tileCenterOffset, &tileCoordinate);
-
+	glm::vec3 tileCoordinate = getTileCoords(currentPosition, g_tileCenterOffset);
 	if ( tileCoordinate.x < 0 || tileCoordinate.z < 0 )
 		return false;
 	
@@ -354,8 +351,7 @@ void processInput(GLFWwindow *window)
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
 		direction += g_camera.GetForward();
-		glm::vec3 playerCoord;
-		getTileCoords(currentPosition, g_tileCenterOffset, &playerCoord);
+		glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
 		glm::vec3 rayTileCoord = castRay(direction, 0.5f);
 		
 		if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
@@ -421,10 +417,12 @@ void processInput(GLFWwindow *window)
 	}
 }
 
-void getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset, glm::vec3 *tileCoordinate)
+glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset)
 {
-	tileCoordinate->x = floor((currentPosition.x + centerOffset.x) / 1.0f);
-	tileCoordinate->z = floor((currentPosition.z + centerOffset.z) / 1.0f);
+	glm::vec3 tileCoordinate;
+	tileCoordinate.x = floor((currentPosition.x + centerOffset.x) / 1.0f);
+	tileCoordinate.z = floor((currentPosition.z + centerOffset.z) / 1.0f);
+	return tileCoordinate;
 }
 
 glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
@@ -439,14 +437,12 @@ glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
 	}
 	glm::vec3 startPosition = g_camera.Position;
 	glm::vec3 currentPosition = g_camera.Position;
-	glm::vec3 tileCoordinate;
+	glm::vec3 tileCoordinate = getTileCoords(currentPosition, g_tileCenterOffset);
 
 	int8_t dirSignX = rayDirection.x > 0 ? 1: -1;
 	int8_t dirSignZ = rayDirection.z > 0 ? 1: -1;
 	int8_t tileOffsetX = rayDirection.x > 0 ? 0: -1;
 	int8_t tileOffsetZ = rayDirection.z > 0 ? 0: -1;
-
-	getTileCoords(currentPosition, g_tileCenterOffset, &tileCoordinate);
 	
 	uint8_t index = 0;
 	float t = 0;
@@ -497,8 +493,7 @@ void setTileAt(uint8_t col, uint8_t row, uint8_t value)
 
 glm::vec3 handleObjectAtPos(glm::vec3 raycastPosition)
 {
-	glm::vec3 tileCoordinate;
-	getTileCoords(raycastPosition, g_tileCenterOffset, &tileCoordinate);
+	glm::vec3 tileCoordinate = getTileCoords(raycastPosition, g_tileCenterOffset);
 	uint8_t tile = getTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z));
 	if ( tile > 0 )
 	{
