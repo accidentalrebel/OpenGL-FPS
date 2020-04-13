@@ -20,7 +20,7 @@ void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 
 glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset);
-glm::vec3 castRay(glm::vec3, float);
+glm::vec3 castRay(glm::vec3, glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 uint8_t getTileAt(uint8_t col, uint8_t row);
 void setTileAt(uint8_t col, uint8_t row, uint8_t value);
@@ -41,14 +41,14 @@ const uint8_t g_mapCol = 8;
 const uint8_t g_mapRow = 8;
 
 uint8_t tileMap[][g_mapRow] = {
- 	{ 1, 1, 1, 0, 0, 0, 0, 0 },
-	{ 1, 0, 0, 0, 0, 1, 1, 0 },
-	{ 0, 0, 0, 0, 0, 1, 1, 0 },
-	{ 1, 0, 0, 0, 0, 1, 1, 0 },
-	{ 1, 0, 1, 0, 0, 1, 1, 0 },
-	{ 1, 0, 1, 0, 0, 1, 1, 0 },
-	{ 1, 0, 1, 0, 0, 1, 1, 0 },
-	{ 1, 1, 1, 0, 0, 0, 0, 0 },	
+ 	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+	{ 1, 0, 0, 0, 0, 0, 0, 1 },
+	{ 1, 0, 0, 0, 0, 0, 0, 1 },
+	{ 1, 0, 0, 0, 1, 1, 0, 1 },
+	{ 1, 0, 0, 0, 1, 1, 0, 1 },
+	{ 1, 0, 1, 0, 0, 0, 0, 1 },
+	{ 1, 0, 1, 0, 0, 0, 0, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1, 1 },	
 };
 
 glm::vec3 cubePositions[] = {
@@ -353,7 +353,7 @@ void processInput(GLFWwindow *window)
 	{
 		direction += g_camera.GetForward();
 		glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
-		glm::vec3 rayTileCoord = castRay(direction, 0.5f);
+		glm::vec3 rayTileCoord = castRay(currentPosition, direction, 0.5f);
 		
 		if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
 		{
@@ -401,15 +401,18 @@ void processInput(GLFWwindow *window)
 			}
 		}
 
-		direction = glm::normalize(direction);
+		if ( direction.x != 0 || direction.z != 0 )
+		{
+			direction = glm::normalize(direction);
 
-		// TEST
-		stepDistance = deltaTime * 0.5f;
-		// END
-		currentPosition += direction * stepDistance;
+			// TEST
+			stepDistance = deltaTime * 0.5f;
+			// END
+			currentPosition += direction * stepDistance;
 
-		if( canMoveToPosition(currentPosition))
-			g_camera.UpdatePosition(currentPosition);
+			if( canMoveToPosition(currentPosition))
+				g_camera.UpdatePosition(currentPosition);
+		}
 	}
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 	{
@@ -432,7 +435,7 @@ void processInput(GLFWwindow *window)
 	{
 		direction = glm::normalize(direction);
 		currentPosition += direction * stepDistance;
-		if ( glm::all(glm::equal(castRay(direction, 0.5f), glm::vec3()))
+		if ( glm::all(glm::equal(castRay(currentPosition, direction, 0.5f), glm::vec3()))
 				 && canMoveToPosition(currentPosition))
 			g_camera.UpdatePosition(currentPosition);
 	}
@@ -443,7 +446,7 @@ void processInput(GLFWwindow *window)
 	}
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
-		castRay(g_camera.Front, 5);
+		castRay(currentPosition, g_camera.Front, 5);
 		g_lastKeyPressed = 0;
 	}
 }
@@ -456,7 +459,7 @@ glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset)
 	return tileCoordinate;
 }
 
-glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
+glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDistance)
 {
 	// This link has helped me a lot in making this:
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
@@ -466,8 +469,7 @@ glm::vec3 castRay(glm::vec3 rayDirection, float castDistance)
 	{
 		g_markers[i] = g_camera.Position;
 	}
-	glm::vec3 startPosition = g_camera.Position;
-	glm::vec3 currentPosition = g_camera.Position;
+	glm::vec3 currentPosition = startPosition;
 	glm::vec3 tileCoordinate = getTileCoords(currentPosition, g_tileCenterOffset);
 
 	int8_t dirSignX = rayDirection.x > 0 ? 1: -1;
