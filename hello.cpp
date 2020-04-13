@@ -344,76 +344,105 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	float movementSpeed = 3.5f;
+	float movementSpeed = 1.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
+	float playerPadding = 0.5f;
 	glm::vec3 direction = glm::vec3(0.0);
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
-		direction += g_camera.GetForward();
 		glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
-		glm::vec3 rayTileCoord = castRay(currentPosition, direction, 0.5f);
 		
-		if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
-		{
-			std::cout << "Cannot move further." << rayTileCoord.x << "," << rayTileCoord.z << std::endl;
-			std::cout << "Current position." << currentPosition.x << "," << currentPosition.z << std::endl;
+		direction += g_camera.GetForward();
+		direction = glm::normalize(direction);
 
-			// Check going against north and south wall
-			if ( rayTileCoord.x == playerCoord.x ) 
+		// We manipulate the position
+		currentPosition += direction * stepDistance;
+
+		// We then check if there are any collissions
+		// Let's check for x-axis collisions
+		glm::vec3 tileAtRightPos = glm::vec3(playerCoord.x + 1, 0, playerCoord.z);
+		float tileAtRight = getTileAt(unsigned(tileAtRightPos.x), unsigned(tileAtRightPos.z));
+		if ( tileAtRight > 0 ) // There is a tile
+		{
+			float i = currentPosition.x + playerPadding;
+			float j = tileAtRightPos.x - g_tileCenterOffset.x;
+			if ( i > j )
 			{
-				std::cout << "Cutting z." << std::endl;				
-				direction.z = 0;
-			}
-			// Check sliding against north wall going east
-			else if ( rayTileCoord.x + 1 == playerCoord.x
-								&& getTileAt(rayTileCoord.x + 1, rayTileCoord.z) > 0 )
-			{
-				std::cout << "2 >Cutting z." << std::endl;
-				direction.z = 0;
-			}
-			// Check sliding against north wall going west
-			else if ( rayTileCoord.x - 1 == playerCoord.x
-								&& getTileAt(rayTileCoord.x - 1, rayTileCoord.z) > 0 )
-			{
-				std::cout << "3 >Cutting z." << std::endl;
-				direction.z = 0;
-			}
-			// Check going against west and east wall
-			else if ( rayTileCoord.z == playerCoord.z )
-			{
-				std::cout << "Cutting x." << std::endl;				
-				direction.x = 0;
-			}
-			// Check sliding against west wall going south
-			else if ( rayTileCoord.z - 1 == playerCoord.z
-								&& getTileAt(rayTileCoord.x, rayTileCoord.z - 1) > 0 )
-			{
-				std::cout << "2 > Cutting x." << std::endl;				
-				direction.x = 0;
-			}
-			// Check sliding against west wall going north
-			else if ( rayTileCoord.z + 1 == playerCoord.z )
-			{
-				std::cout << "3 > Cutting x." << std::endl;				
-				direction.x = 0;
+				std::cout << "There is a collission!" << std::endl;
+				currentPosition.x -= (i - j);
 			}
 		}
-
-		if ( direction.x != 0 || direction.z != 0 )
-		{
-			direction = glm::normalize(direction);
-
-			// TEST
-			stepDistance = deltaTime * 0.5f;
-			// END
-			currentPosition += direction * stepDistance;
-
-			if( canMoveToPosition(currentPosition))
-				g_camera.UpdatePosition(currentPosition);
-		}
+		
+		g_camera.UpdatePosition(currentPosition);
 	}
+	
+	// if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
+	// {
+	// 	direction += g_camera.GetForward();
+	// 	glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
+	// 	glm::vec3 rayTileCoord = castRay(currentPosition, direction, 0.5f);
+		
+	// 	if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
+	// 	{
+	// 		std::cout << "Cannot move further." << rayTileCoord.x << "," << rayTileCoord.z << std::endl;
+	// 		std::cout << "Current position." << currentPosition.x << "," << currentPosition.z << std::endl;
+
+	// 		// Check going against north and south wall
+	// 		if ( rayTileCoord.x == playerCoord.x ) 
+	// 		{
+	// 			std::cout << "Cutting z." << std::endl;				
+	// 			direction.z = 0;
+	// 		}
+	// 		// Check sliding against north wall going east
+	// 		else if ( rayTileCoord.x + 1 == playerCoord.x
+	// 							&& getTileAt(rayTileCoord.x + 1, rayTileCoord.z) > 0 )
+	// 		{
+	// 			std::cout << "2 >Cutting z." << std::endl;
+	// 			direction.z = 0;
+	// 		}
+	// 		// Check sliding against north wall going west
+	// 		else if ( rayTileCoord.x - 1 == playerCoord.x
+	// 							&& getTileAt(rayTileCoord.x - 1, rayTileCoord.z) > 0 )
+	// 		{
+	// 			std::cout << "3 >Cutting z." << std::endl;
+	// 			direction.z = 0;
+	// 		}
+	// 		// Check going against west and east wall
+	// 		else if ( rayTileCoord.z == playerCoord.z )
+	// 		{
+	// 			std::cout << "Cutting x." << std::endl;				
+	// 			direction.x = 0;
+	// 		}
+	// 		// Check sliding against west wall going south
+	// 		else if ( rayTileCoord.z - 1 == playerCoord.z
+	// 							&& getTileAt(rayTileCoord.x, rayTileCoord.z - 1) > 0 )
+	// 		{
+	// 			std::cout << "2 > Cutting x." << std::endl;				
+	// 			direction.x = 0;
+	// 		}
+	// 		// Check sliding against west wall going north
+	// 		else if ( rayTileCoord.z + 1 == playerCoord.z )
+	// 		{
+	// 			std::cout << "3 > Cutting x." << std::endl;				
+	// 			direction.x = 0;
+	// 		}
+	// 	}
+
+	// 	if ( direction.x != 0 || direction.z != 0 )
+	// 	{
+	// 		direction = glm::normalize(direction);
+
+	// 		// TEST
+	// 		stepDistance = deltaTime * 0.5f;
+	// 		// END
+	// 		currentPosition += direction * stepDistance;
+
+	// 		if( canMoveToPosition(currentPosition))
+	// 			g_camera.UpdatePosition(currentPosition);
+	// 	}
+	// }
 	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
 	{
 		direction += -g_camera.Front;
