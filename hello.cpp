@@ -346,7 +346,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	float movementSpeed = 1.5f;
+	float movementSpeed = 2.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
 	glm::vec3 direction = glm::vec3(0.0);
@@ -354,19 +354,20 @@ void processInput(GLFWwindow *window)
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
 		direction += g_camera.GetForward();
-		glm::vec3 rayHit = castRay(direction, 0.5f);
-		if ( glm::any(glm::greaterThan(rayHit, glm::vec3(0))) )
+		glm::vec3 playerCoord;
+		getTileCoords(currentPosition, g_tileCenterOffset, &playerCoord);
+		glm::vec3 rayTileCoord = castRay(direction, 0.5f);
+		
+		if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
 		{
-			std::cout << "Cannot move further." << rayHit.x << "," << rayHit.z << std::endl;
-			if ( currentPosition.x > rayHit.x - 1.0f && currentPosition.x < rayHit.x + 1.0f )
+			std::cout << "Cannot move further." << rayTileCoord.x << "," << rayTileCoord.z << std::endl;
+			std::cout << "Current position." << currentPosition.x << "," << currentPosition.z << std::endl;
+			if ( rayTileCoord.x == playerCoord.x  ) 
 			{
 				std::cout << "Cutting z." << std::endl;				
-				// direction.z = -0.01f;
-				direction.z = 0;
-				// g_camera.Yaw += 0.1f;
-				// g_camera.updateCameraVectors();
+					direction.z = 0;
 			}
-			else if ( currentPosition.z > rayHit.z - 1.0f && currentPosition.z < rayHit.z + 1.0f )
+			else if ( rayTileCoord.z == playerCoord.z )
 			{
 				std::cout << "Cutting x." << std::endl;				
 				direction.x = 0;
@@ -374,6 +375,10 @@ void processInput(GLFWwindow *window)
 		}
 
 		direction = glm::normalize(direction);
+
+		// TEST
+		stepDistance = deltaTime * 0.5f;
+		// END
 		currentPosition += direction * stepDistance;
 
 		if( canMoveToPosition(currentPosition))
