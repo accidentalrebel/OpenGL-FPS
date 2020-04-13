@@ -304,7 +304,7 @@ void displayMap(Shader *shader)
 	// Markers
 	for ( uint8_t index = 0 ; index < maxMarkerCount ; ++index )
 	{
-		glm::mat4 model = glm::mat4(1.0f);
+ 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(g_markers[index].x, -0.5f, g_markers[index].z));
 		model = glm::scale(model, glm::vec3(0.04f, 0.1f, 0.04f));
 		int modelLoc = glGetUniformLocation(shader->ID, "model");

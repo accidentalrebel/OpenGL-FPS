@@ -1,4 +1,4 @@
-OBJS = glad.c hello.cpp
+OBJS = glad.c color.cpp #hello.cpp
 
 OBJ_NAME = hello
 

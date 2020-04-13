@@ -2,6 +2,9 @@
 #define SHADER_H
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+// #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>
@@ -108,6 +111,14 @@ class Shader
 	void setVec4(const std::string &name, float v1, float v2, float v3, float v4) const
 	{
 		glUniform4f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3, v4);
+	}
+	void setVec3(const std::string &name, float v1, float v2, float v3) const
+	{
+		glUniform3f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3);
+	}
+	void setMat4(const std::string &name, glm::mat4 mat) const
+	{
+		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 	}
 	
 };
