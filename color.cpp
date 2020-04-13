@@ -86,7 +86,7 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	glEnable(GL_DEPTH_TEST);
@@ -136,6 +136,7 @@ int main()
 		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
 		lightingShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 		lightingShader.setVec3("lightPos",  lightPos.x, lightPos.y, lightPos.z);
+		lightingShader.setVec3("viewPos", g_camera.Position.x, g_camera.Position.y, g_camera.Position.z);
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
