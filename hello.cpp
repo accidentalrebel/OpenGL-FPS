@@ -18,6 +18,7 @@ void processInput(GLFWwindow *window);
 void displayMap(Shader *shader);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
+
 glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset);
 glm::vec3 castRay(glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
@@ -343,7 +344,7 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 
 	glm::vec3 currentPosition = g_camera.Position;
-	float movementSpeed = 2.5f;
+	float movementSpeed = 3.5f;
 	float stepDistance = deltaTime * movementSpeed;	
 	bool keyPressed = false;
 	glm::vec3 direction = glm::vec3(0.0);
@@ -358,14 +359,44 @@ void processInput(GLFWwindow *window)
 		{
 			std::cout << "Cannot move further." << rayTileCoord.x << "," << rayTileCoord.z << std::endl;
 			std::cout << "Current position." << currentPosition.x << "," << currentPosition.z << std::endl;
-			if ( rayTileCoord.x == playerCoord.x  ) 
+
+			// Check going against north and south wall
+			if ( rayTileCoord.x == playerCoord.x ) 
 			{
 				std::cout << "Cutting z." << std::endl;				
-					direction.z = 0;
+				direction.z = 0;
 			}
+			// Check sliding against north wall going east
+			else if ( rayTileCoord.x + 1 == playerCoord.x
+								&& getTileAt(rayTileCoord.x + 1, rayTileCoord.z) > 0 )
+			{
+				std::cout << "2 >Cutting z." << std::endl;
+				direction.z = 0;
+			}
+			// Check sliding against north wall going west
+			else if ( rayTileCoord.x - 1 == playerCoord.x
+								&& getTileAt(rayTileCoord.x - 1, rayTileCoord.z) > 0 )
+			{
+				std::cout << "3 >Cutting z." << std::endl;
+				direction.z = 0;
+			}
+			// Check going against west and east wall
 			else if ( rayTileCoord.z == playerCoord.z )
 			{
 				std::cout << "Cutting x." << std::endl;				
+				direction.x = 0;
+			}
+			// Check sliding against west wall going south
+			else if ( rayTileCoord.z - 1 == playerCoord.z
+								&& getTileAt(rayTileCoord.x, rayTileCoord.z - 1) > 0 )
+			{
+				std::cout << "2 > Cutting x." << std::endl;				
+				direction.x = 0;
+			}
+			// Check sliding against west wall going north
+			else if ( rayTileCoord.z + 1 == playerCoord.z )
+			{
+				std::cout << "3 > Cutting x." << std::endl;				
 				direction.x = 0;
 			}
 		}
