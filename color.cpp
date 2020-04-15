@@ -12,6 +12,7 @@
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+unsigned int loadTexture(const char *path);
 
 Camera g_camera(glm::vec3(0, 1.0f, 5.0f));
 float lastX = 400.0f, lastY = 300.0f;
@@ -125,37 +126,8 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// TEXTURES
-	unsigned int diffuseMap, specularMap;	
-	
-	int width, height, nrChannels;
-	unsigned char *data = stbi_load("assets/container2.png", &width, &height, &nrChannels, 0);
-	if ( data )
-	{
-		glGenTextures(1, &diffuseMap);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture1" << std::endl;
-	}
- 	stbi_image_free(data);
-	data = stbi_load("assets/container2_specular.png", &width, &height, &nrChannels, 0);
-	if ( data )
-	{
-		glGenTextures(1, &specularMap);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
-		
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture1" << std::endl;
-	}
- 	stbi_image_free(data);
+	unsigned int diffuseMap = loadTexture("assets/container2.png");
+	unsigned int specularMap = loadTexture("assets/container2_specular.png");
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -277,4 +249,41 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 	lastY = yPos;
 	
 	g_camera.ProcessMouseMovement(xOffset, yOffset, true);
+}
+
+unsigned int loadTexture(char const * path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }
