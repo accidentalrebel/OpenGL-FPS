@@ -120,7 +120,7 @@ int main()
 	Shader lightingShader("color.vs", "color.fs");
 	Shader lampShader("lamp.vs", "lamp.fs");
 
-	glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
+	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -133,10 +133,27 @@ int main()
 
 		// CUBE
 		lightingShader.use();
-		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+
+		glm::vec3 lightColor;
+		lightColor.x = sin(glfwGetTime() * 2.0f);
+		lightColor.y = sin(glfwGetTime() * 0.7f);
+		lightColor.z = sin(glfwGetTime() * 1.3f);
+
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
+		lightingShader.setVec3("light.ambient", ambientColor);
+		lightingShader.setVec3("light.diffuse", diffuseColor);
+		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+		lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		lightingShader.setFloat("material.shininess", 32.0f);
 		lightingShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 		lightingShader.setVec3("lightPos",  lightPos.x, lightPos.y, lightPos.z);
 		lightingShader.setVec3("viewPos", g_camera.Position.x, g_camera.Position.y, g_camera.Position.z);
+		lightingShader.setFloat("ambientStrength", 0.1f);
+		lightingShader.setFloat("specularStrength", 0.5f); //sin(glfwGetTime()));
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
@@ -154,7 +171,12 @@ int main()
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", view);
 
+ 		// lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+		// lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+		// lightPos.z = cos(glfwGetTime() / 2.0f) * 1.0f;
+		
 		model = glm::mat4(1.0f);
+		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lampShader.setMat4("model", model);
