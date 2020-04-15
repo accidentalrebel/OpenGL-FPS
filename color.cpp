@@ -125,11 +125,29 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// TEXTURES
-
+	unsigned int diffuseMap, specularMap;	
+	
 	int width, height, nrChannels;
 	unsigned char *data = stbi_load("assets/container2.png", &width, &height, &nrChannels, 0);
 	if ( data )
 	{
+		glGenTextures(1, &diffuseMap);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture1" << std::endl;
+	}
+ 	stbi_image_free(data);
+	data = stbi_load("assets/container2_specular.png", &width, &height, &nrChannels, 0);
+	if ( data )
+	{
+		glGenTextures(1, &specularMap);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
+		
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -139,14 +157,11 @@ int main()
 	}
  	stbi_image_free(data);
 
-	unsigned int diffuseMap;	
-	glGenTextures(0, &diffuseMap);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	Shader lightingShader("color.vs", "color.fs");
 	lightingShader.setInt("material.diffuse", 0);
+	lightingShader.setInt("material.specular", 1);
 
 	Shader lampShader("lamp.vs", "lamp.fs");
 
@@ -161,8 +176,8 @@ int main()
 
 		// CUBE RENDERING
 		lightingShader.use();
-		lightingShader.setVec3("light.position",  lightPos.x, lightPos.y, lightPos.z);
-		lightingShader.setVec3("viewPos", g_camera.Position.x, g_camera.Position.y, g_camera.Position.z);
+		lightingShader.setVec3("light.position",  lightPos);
+		lightingShader.setVec3("viewPos", g_camera.Position);
 
 		// Light properties
 		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
@@ -170,7 +185,6 @@ int main()
 		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 		// Material properties
-		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 		lightingShader.setFloat("material.shininess", 64.0f);
 		
 		// View projection transformations
@@ -186,6 +200,8 @@ int main()
 		// bind diffuse map
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
 
 		// render cube
 		glBindVertexArray(cubeVAO);
