@@ -149,7 +149,7 @@ int main()
 
 		// CUBE RENDERING
 		lightingShader.use();
-		lightingShader.setVec3("light.position",  lightPos);
+		lightingShader.setVec3("light.direction",  -0.2f, -1.0f, -0.3f);
 		lightingShader.setVec3("viewPos", g_camera.Position);
 
 		// Light properties
@@ -178,6 +178,11 @@ int main()
 
 		// render cube
 		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(1.25f, 0.0f, 0.0f));
+		lightingShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// LAMP
