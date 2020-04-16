@@ -41,8 +41,6 @@ void main()
   vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
   vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 
-  vec3 emission = vec3(texture(material.emission, TexCoords));
-
-  vec3 result = ambient + diffuse + specular + emission;
+  vec3 result = ambient + diffuse + specular;
   FragColor = vec4(result, 1.0);
 }

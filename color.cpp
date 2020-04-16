@@ -128,7 +128,6 @@ int main()
 	// TEXTURES
 	unsigned int diffuseMap = loadTexture("assets/container2.png");
 	unsigned int specularMap = loadTexture("assets/container2_specular.png");
-	unsigned int emissionMap = loadTexture("assets/container2_emission.jpg");
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -136,7 +135,6 @@ int main()
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
 	lightingShader.setInt("material.specular", 1);
-	lightingShader.setInt("material.emission", 2);
 
 	Shader lampShader("lamp.vs", "lamp.fs");
 
@@ -177,8 +175,6 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, emissionMap);
 
 		// render cube
 		glBindVertexArray(cubeVAO);
