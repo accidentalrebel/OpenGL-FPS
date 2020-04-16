@@ -164,6 +164,7 @@ int main()
 		lightingShader.setVec3("light.position", g_camera.Position);
 		lightingShader.setVec3("light.direction", g_camera.Front); // -0.2f, -1.0f, -0.3f);
 		lightingShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+		lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
 		lightingShader.setVec3("viewPos", g_camera.Position);
 
 		// Light properties
