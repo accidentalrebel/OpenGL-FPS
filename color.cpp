@@ -186,6 +186,14 @@ int main()
 		lightingShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 		lightingShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 
+		// Spot Light
+		lightingShader.setVec3("spotLight.position",  g_camera.Position);
+		lightingShader.setVec3("spotLight.direction", g_camera.Front);
+		lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		lightingShader.setVec3("spotLight.ambient", 0.1f, 0.1f, 0.1f);
+		lightingShader.setVec3("spotLight.diffuse", 0.8f, 0.8f, 0.8f);
+		lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+
 		// Point Light
 		lightingShader.setVec3("pointLights[0].position", pointLightPositions[0]);
 		lightingShader.setVec3("pointLights[0].ambient", pointLightColors[0] * 0.1f);
