@@ -190,37 +190,10 @@ int main()
 		lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
 
 		// Point Light
-		lightingShader.setVec3("pointLights[0].position", pointLights[0].Position);
-		lightingShader.setVec3("pointLights[0].ambient", pointLights[0].Color * 0.1f);
-		lightingShader.setVec3("pointLights[0].diffuse", pointLights[0].Color * 0.8f);
-		lightingShader.setVec3("pointLights[0].specular", pointLights[0].Color);
-		lightingShader.setFloat("pointLights[0].constant", 1.0f);
-		lightingShader.setFloat("pointLights[0].linear", 0.09);
-		lightingShader.setFloat("pointLights[0].quadratic", 0.032);
-
-		lightingShader.setVec3("pointLights[1].position", pointLights[1].Position);
-		lightingShader.setVec3("pointLights[1].ambient", pointLights[1].Color * 0.1f);
-		lightingShader.setVec3("pointLights[1].diffuse", pointLights[1].Color * 0.8f);
-		lightingShader.setVec3("pointLights[1].specular", pointLights[1].Color);
-		lightingShader.setFloat("pointLights[1].constant", 1.0f);
-		lightingShader.setFloat("pointLights[1].linear", 0.09);
-		lightingShader.setFloat("pointLights[1].quadratic", 0.032);
-
-		lightingShader.setVec3("pointLights[2].position", pointLights[2].Position);
-		lightingShader.setVec3("pointLights[2].ambient", pointLights[2].Color * 0.1f);
-		lightingShader.setVec3("pointLights[2].diffuse", pointLights[2].Color * 0.8f);
-		lightingShader.setVec3("pointLights[2].specular", pointLights[2].Color);
-		lightingShader.setFloat("pointLights[2].constant", 1.0f);
-		lightingShader.setFloat("pointLights[2].linear", 0.09);
-		lightingShader.setFloat("pointLights[2].quadratic", 0.032);
-
-		lightingShader.setVec3("pointLights[3].position", pointLights[3].Position);
-		lightingShader.setVec3("pointLights[3].ambient", pointLights[3].Color * 0.1f);
-		lightingShader.setVec3("pointLights[3].diffuse", pointLights[3].Color * 0.8f);
-		lightingShader.setVec3("pointLights[3].specular", pointLights[3].Color);
-		lightingShader.setFloat("pointLights[3].constant", 1.0f);
-		lightingShader.setFloat("pointLights[3].linear", 0.09);
-		lightingShader.setFloat("pointLights[3].quadratic", 0.032);
+		pointLights[0].Setup(&lightingShader, "pointLights[0]", 0.1f, 0.8f);
+		pointLights[1].Setup(&lightingShader, "pointLights[1]", 0.1f, 0.8f);
+		pointLights[2].Setup(&lightingShader, "pointLights[2]", 0.1f, 0.8f);
+		pointLights[3].Setup(&lightingShader, "pointLights[3]", 0.1f, 0.8f);
 		
 		// View projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
