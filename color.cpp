@@ -177,7 +177,7 @@ int main()
 		lightingShader.setFloat("material.shininess", 32.0f);
 
 		// Directional Light
-		LightUtils::SetupDirectionLight(&directionLight, &lightingShader);
+		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
 																				
 		// Spot Light
 		lightingShader.setVec3("spotLight.position",  g_camera.Position);
@@ -189,10 +189,10 @@ int main()
 		lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
 
 		// Point Light
-		LightUtils::SetupPointLight(&pointLights[0], &lightingShader, "pointLights[0]", 0.1f, 0.8f);
-		LightUtils::SetupPointLight(&pointLights[1], &lightingShader, "pointLights[1]", 0.1f, 0.8f);
-		LightUtils::SetupPointLight(&pointLights[2], &lightingShader, "pointLights[2]", 0.1f, 0.8f);
-		LightUtils::SetupPointLight(&pointLights[3], &lightingShader, "pointLights[3]", 0.1f, 0.8f);
+		LightUtils::SetupPointLight(&pointLights[0], &lightingShader, "pointLights[0]");
+		LightUtils::SetupPointLight(&pointLights[1], &lightingShader, "pointLights[1]");
+		LightUtils::SetupPointLight(&pointLights[2], &lightingShader, "pointLights[2]");
+		LightUtils::SetupPointLight(&pointLights[3], &lightingShader, "pointLights[3]");
 		
 		// View projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
@@ -230,7 +230,7 @@ int main()
 
 		for(unsigned int i = 0; i < 4; i++)
 		{
-			lampShader.setVec3("lightColor", pointLights[i].Color);
+			lampShader.setVec3("lightColor", pointLights[i].Color * 0.8f);
 			
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, pointLights[i].Position);

@@ -7,15 +7,15 @@
 class LightUtils
 {
  public:
-	static void SetupDirectionLight(DirectionLight * directionLight, Shader * shader)
+	static void SetupDirectionLight(DirectionLight * directionLight, Shader * shader, const std::string &name)
 	{
-		shader->setVec3("dirLight.direction", directionLight->Direction);
-		shader->setVec3("dirLight.ambient", directionLight->Color * 0.05f);
-		shader->setVec3("dirLight.diffuse", directionLight->Color * 0.4f);
-		shader->setVec3("dirLight.specular", directionLight->Color * 0.5f);
+		shader->setVec3(name + ".direction", directionLight->Direction);
+		shader->setVec3(name + ".ambient", directionLight->Color * 0.05f);
+		shader->setVec3(name + ".diffuse", directionLight->Color * 0.4f);
+		shader->setVec3(name + ".specular", directionLight->Color * 0.5f);
 	}
 	
-  static void SetupPointLight(PointLight *pointLight, Shader* shader, const std::string &name, float ambientIntensity, float diffuseIntensity)
+  static void SetupPointLight(PointLight *pointLight, Shader* shader, const std::string &name)
   {
     shader->setVec3(name + ".position", pointLight->Position);
     shader->setVec3(name + ".ambient", pointLight->Color * 0.1f);
