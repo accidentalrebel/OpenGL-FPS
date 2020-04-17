@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.h"
-#include "src/graphics/light_utils.h"
+#include "src/graphics/light/light_utils.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -160,6 +160,8 @@ int main()
 
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
+	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-0.2f, -1.0f, -0.3f));
+
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -175,11 +177,8 @@ int main()
 		lightingShader.setFloat("material.shininess", 32.0f);
 
 		// Directional Light
-		lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		lightingShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		lightingShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
+		LightUtils::SetupDirectionLight(&directionLight, &lightingShader);
+																				
 		// Spot Light
 		lightingShader.setVec3("spotLight.position",  g_camera.Position);
 		lightingShader.setVec3("spotLight.direction", g_camera.Front);
