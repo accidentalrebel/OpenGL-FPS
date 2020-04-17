@@ -16,12 +16,12 @@ class PointLight
 		Color = color;
   }
 
-	void Setup(Shader* shader, const std::string &name, float ambientIntensity, float diffuseIntensity)
+	static void Setup(PointLight *pointLight, Shader* shader, const std::string &name, float ambientIntensity, float diffuseIntensity)
 	{
-		shader->setVec3(name + ".position", Position);
-		shader->setVec3(name + ".ambient", Color * 0.1f);
-		shader->setVec3(name + ".diffuse", Color * 0.8f);
-		shader->setVec3(name + ".specular", Color);
+		shader->setVec3(name + ".position", pointLight->Position);
+		shader->setVec3(name + ".ambient", pointLight->Color * 0.1f);
+		shader->setVec3(name + ".diffuse", pointLight->Color * 0.8f);
+		shader->setVec3(name + ".specular", pointLight->Color);
 		shader->setFloat(name + ".constant", 1.0f);
 		shader->setFloat(name + ".linear", 0.09);
 		shader->setFloat(name + ".quadratic", 0.032);

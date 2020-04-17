@@ -190,10 +190,10 @@ int main()
 		lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
 
 		// Point Light
-		pointLights[0].Setup(&lightingShader, "pointLights[0]", 0.1f, 0.8f);
-		pointLights[1].Setup(&lightingShader, "pointLights[1]", 0.1f, 0.8f);
-		pointLights[2].Setup(&lightingShader, "pointLights[2]", 0.1f, 0.8f);
-		pointLights[3].Setup(&lightingShader, "pointLights[3]", 0.1f, 0.8f);
+		PointLight::Setup(&pointLights[0], &lightingShader, "pointLights[0]", 0.1f, 0.8f);
+		PointLight::Setup(&pointLights[1], &lightingShader, "pointLights[1]", 0.1f, 0.8f);
+		PointLight::Setup(&pointLights[2], &lightingShader, "pointLights[2]", 0.1f, 0.8f);
+		PointLight::Setup(&pointLights[3], &lightingShader, "pointLights[3]", 0.1f, 0.8f);
 		
 		// View projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
