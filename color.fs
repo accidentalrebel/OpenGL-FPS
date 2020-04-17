@@ -32,6 +32,7 @@ struct SpotLight {
   vec3 direction;
 
   float cutOff;
+  float outerCutOff;
 
   vec3 ambient;
   vec3 diffuse;
@@ -65,7 +66,6 @@ void main()
   for(int i = 0; i < NR_POINT_LIGHTS; i++) {
     result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
   }
-  // phase 3: Spot light
   result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
     
   FragColor = vec4(result, 1.0);
@@ -112,8 +112,10 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
   vec3 lightDir = normalize(light.position - fragPos);
   float theta = dot(lightDir, normalize(-light.direction));
+  float epsilon   = light.cutOff - light.outerCutOff;
+  float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);    
     
-  if(theta > light.cutOff) 
+  if(theta > light.outerCutOff) 
     {       
       vec3 lightDir = normalize(-light.direction);
       // diffuse shading
@@ -125,6 +127,10 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
       vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, TexCoords));
       vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));
       vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+      diffuse *= intensity;
+      specular *= intensity;
+      
       return (ambient + diffuse + specular);
     }
   else
