@@ -136,7 +136,7 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);aa,a,,
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -340,11 +340,32 @@ void processInput(GLFWwindow *window)
 
 	if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
 	{
+		direction += g_camera.GetForward();
+		keyPressed = true;
+	}
+	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+	{
+		direction += -g_camera.GetForward();
+		keyPressed = true;
+	}
+
+	if ( glfwGetKey(window, GLFW_KEY_A ) == GLFW_PRESS)
+	{
+		direction += -g_camera.Right;
+		keyPressed = true;
+	}
+	else if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
+	{
+		direction += g_camera.Right;
+		keyPressed = true;
+	}
+
+	if ( keyPressed )
+	{
+		direction = glm::normalize(direction);
+		
 		glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
 		
-		direction += g_camera.GetForward();
-		direction = glm::normalize(direction);
-
 		// We manipulate the position
 		currentPosition += direction * stepDistance;
 
@@ -402,97 +423,6 @@ void processInput(GLFWwindow *window)
 		}
 
 		if ( canMoveToPosition(currentPosition )) // This is a final check to see if we are somewhere we are not supposed to
-				 g_camera.UpdatePosition(currentPosition);
-	}
-	
-	// if ( glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
-	// {
-	// 	direction += g_camera.GetForward();
-	// 	glm::vec3 playerCoord = getTileCoords(currentPosition, g_tileCenterOffset);
-	// 	glm::vec3 rayTileCoord = castRay(currentPosition, direction, 0.5f);
-		
-	// 	if ( glm::any(glm::greaterThan(rayTileCoord, glm::vec3(0))) )
-	// 	{
-	// 		std::cout << "Cannot move further." << rayTileCoord.x << "," << rayTileCoord.z << std::endl;
-	// 		std::cout << "Current position." << currentPosition.x << "," << currentPosition.z << std::endl;
-
-	// 		// Check going against north and south wall
-	// 		if ( rayTileCoord.x == playerCoord.x ) 
-	// 		{
-	// 			std::cout << "Cutting z." << std::endl;				
-	// 			direction.z = 0;
-	// 		}
-	// 		// Check sliding against north wall going east
-	// 		else if ( rayTileCoord.x + 1 == playerCoord.x
-	// 							&& getTileAt(rayTileCoord.x + 1, rayTileCoord.z) > 0 )
-	// 		{
-	// 			std::cout << "2 >Cutting z." << std::endl;
-	// 			direction.z = 0;
-	// 		}
-	// 		// Check sliding against north wall going west
-	// 		else if ( rayTileCoord.x - 1 == playerCoord.x
-	// 							&& getTileAt(rayTileCoord.x - 1, rayTileCoord.z) > 0 )
-	// 		{
-	// 			std::cout << "3 >Cutting z." << std::endl;
-	// 			direction.z = 0;
-	// 		}
-	// 		// Check going against west and east wall
-	// 		else if ( rayTileCoord.z == playerCoord.z )
-	// 		{
-	// 			std::cout << "Cutting x." << std::endl;				
-	// 			direction.x = 0;
-	// 		}
-	// 		// Check sliding against west wall going south
-	// 		else if ( rayTileCoord.z - 1 == playerCoord.z
-	// 							&& getTileAt(rayTileCoord.x, rayTileCoord.z - 1) > 0 )
-	// 		{
-	// 			std::cout << "2 > Cutting x." << std::endl;				
-	// 			direction.x = 0;
-	// 		}
-	// 		// Check sliding against west wall going north
-	// 		else if ( rayTileCoord.z + 1 == playerCoord.z )
-	// 		{
-	// 			std::cout << "3 > Cutting x." << std::endl;				
-	// 			direction.x = 0;
-	// 		}
-	// 	}
-
-	// 	if ( direction.x != 0 || direction.z != 0 )
-	// 	{
-	// 		direction = glm::normalize(direction);
-
-	// 		// TEST
-	// 		stepDistance = deltaTime * 0.5f;
-	// 		// END
-	// 		currentPosition += direction * stepDistance;
-
-	// 		if( canMoveToPosition(currentPosition))
-	// 			g_camera.UpdatePosition(currentPosition);
-	// 	}
-	// }
-	else if ( glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
-	{
-		direction += -g_camera.Front;
-		keyPressed = true;
-	}
-
-	if ( glfwGetKey(window, GLFW_KEY_A ) == GLFW_PRESS)
-	{
-		direction += -g_camera.Right;
-		keyPressed = true;
-	}
-	else if ( glfwGetKey(window, GLFW_KEY_E ) == GLFW_PRESS)
-	{
-		direction += g_camera.Right;
-		keyPressed = true;
-	}
-
-	if ( keyPressed )
-	{
-		direction = glm::normalize(direction);
-		currentPosition += direction * stepDistance;
-		if ( glm::all(glm::equal(castRay(currentPosition, direction, 0.5f), glm::vec3()))
-				 && canMoveToPosition(currentPosition))
 			g_camera.UpdatePosition(currentPosition);
 	}
 
