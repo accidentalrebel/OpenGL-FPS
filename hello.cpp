@@ -144,6 +144,9 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
+	glEnable(GL_DEPTH_TEST);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	// --------------------------------
 	// Configuration
 	// --------------------------------
@@ -180,11 +183,14 @@ int main()
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
 	lightingShader.setInt("material.specular", 1);
-	
-	// Settings
-	glEnable(GL_DEPTH_TEST);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
+
+	PointLight pointLights[] = {
+		PointLight(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+	};
+	
+	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.3f;
 
@@ -202,6 +208,7 @@ int main()
 		lightingShader.setVec3("viewPos", g_camera.Position);
 		lightingShader.setFloat("material.shininess", 32.0f);
 		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
+		LightUtils::SetupPointLight(&pointLights[0], &lightingShader, "pointLights[0]");
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
@@ -216,6 +223,24 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
 		glBindVertexArray(VAO);
+
+		// LAMP
+		lampShader.use();
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", view);
+
+		for(unsigned int i = 0; i < 1; i++)
+		{
+			lampShader.setVec3("lightColor", pointLights[i].Color * 0.8f);
+			
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLights[i].Position);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lampShader.setMat4("model", model);
+
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

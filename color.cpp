@@ -158,8 +158,6 @@ int main()
 
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
-	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-0.2f, -1.0f, -0.3f));
 	SpotLight spotLight(glm::vec3(1.0f, 1.0f, 1.0f), 15.5f, 17.5f);
 
