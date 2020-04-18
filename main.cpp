@@ -136,7 +136,7 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);aa,a,,
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -194,7 +194,8 @@ int main()
 	
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
-	directionLight.AmbientIntensity = 0.3f;
+	directionLight.AmbientIntensity = 0.01f;
+	directionLight.DiffuseIntensity = 0.01f;
 
 	while(!glfwWindowShouldClose(window))
 	{
