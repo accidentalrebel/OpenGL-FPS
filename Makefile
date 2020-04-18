@@ -1,4 +1,4 @@
-OBJS = glad.c color.cpp #hello.cpp
+OBJS = src/tools/glad.c color.cpp #hello.cpp
 
 OBJ_NAME = hello
 

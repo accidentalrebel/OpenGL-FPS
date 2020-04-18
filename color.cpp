@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "camera.h"
+#include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
 #include "src/graphics/light/light_utils.h"
 
@@ -151,12 +151,12 @@ int main()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	Shader lightingShader("color.vs", "color.fs");
+	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
 	lightingShader.setInt("material.specular", 1);
 
-	Shader lampShader("lamp.vs", "lamp.fs");
+	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 

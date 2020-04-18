@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "camera.h"
+#include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -146,7 +146,7 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// Shader
-	Shader shader("shader.vs", "shader.fs");
+	Shader shader("shaders/shader.vs", "shaders/shader.fs");
 
 	// --------------------------------
 	// Configuration
