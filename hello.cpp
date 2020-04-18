@@ -187,8 +187,12 @@ int main()
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
 	PointLight pointLights[] = {
-		PointLight(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+		PointLight(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		PointLight(glm::vec3(4.0f, 0.0f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f))
 	};
+	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
+	lightingShader.setInt("pointLightCount", pointLightCount);
+
 	
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
@@ -208,7 +212,11 @@ int main()
 		lightingShader.setVec3("viewPos", g_camera.Position);
 		lightingShader.setFloat("material.shininess", 32.0f);
 		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
-		LightUtils::SetupPointLight(&pointLights[0], &lightingShader, "pointLights[0]");
+
+		for ( unsigned int i = 0; i < pointLightCount ; ++i )
+		{
+			LightUtils::SetupPointLight(&pointLights[i], &lightingShader, "pointLights[" + std::to_string(i) + "]");
+		}
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
@@ -229,7 +237,7 @@ int main()
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", view);
 
-		for(unsigned int i = 0; i < 1; i++)
+		for(unsigned int i = 0; i < pointLightCount; i++)
 		{
 			lampShader.setVec3("lightColor", pointLights[i].Color * 0.8f);
 			
