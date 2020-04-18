@@ -173,7 +173,7 @@ int main()
 
 	// TEXTURES AND SHADERS
 	stbi_set_flip_vertically_on_load(true);
-	unsigned int diffuseMap = loadTexture("assets/container2.png");
+	unsigned int diffuseMap = loadTexture("assets/tile.png");
 	unsigned int specularMap = loadTexture("assets/container2_specular.png");
 
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
@@ -186,6 +186,7 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
+	directionLight.AmbientIntensity = 0.3f;
 
 	while(!glfwWindowShouldClose(window))
 	{
