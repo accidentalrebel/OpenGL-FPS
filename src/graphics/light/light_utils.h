@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../shader.h"
+#include "../shader.h"
 #include "direction_light.h"
 #include "point_light.h"
 #include "spot_light.h"

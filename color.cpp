@@ -1,10 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.h"
+#include "src/graphics/shader.h"
 #include "src/graphics/light/light_utils.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -180,8 +180,6 @@ int main()
 		// Directional Light
 		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
 
-
-		
 		// Spot Light
 		spotLight.Position = g_camera.Position;
 		spotLight.Direction = g_camera.Front;

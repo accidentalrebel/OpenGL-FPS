@@ -1,12 +1,12 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "shader.h"
 #include <math.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.h"
+#include "src/graphics/shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
