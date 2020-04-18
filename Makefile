@@ -1,6 +1,6 @@
-OBJS = src/contrib/glad.c hello.cpp #color.cpp
+OBJS = src/contrib/glad.c main.cpp #color.cpp
 
-OBJ_NAME = hello
+OBJ_NAME = main
 
 CC = g++
 
