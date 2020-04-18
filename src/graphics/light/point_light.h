@@ -11,8 +11,8 @@ class PointLight
 	float AmbientIntensity = 0.1f;
 	float DiffuseIntensity = 0.8f;
 	float Constant = 1.0f;
-	float Linear = 0.09f;
-	float Quadratic = 0.032f;
+	float Linear = 0.35f;
+	float Quadratic = 0.44f;
 
   PointLight(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 color = glm::vec3(1.0f, 0.0f, 1.0f))
 	{
