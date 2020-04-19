@@ -183,10 +183,11 @@ int main()
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
 	PointLight pointLights[] = {
-		PointLight(glm::vec3(2.0f, -0.4f, 2.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		PointLight(glm::vec3(5.0f, -0.4f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-		PointLight(glm::vec3(3.0f, -0.4f, 3.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-		PointLight(glm::vec3(4.0f, -0.4f, 2.0f), glm::vec3(1.0f, 1.0f, 0.0f))
+		PointLight(glm::vec3(1.0f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+		PointLight(glm::vec3(6.0f, -0.4f, 3.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
+		PointLight(glm::vec3(1.0f, -0.4f, 5.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	lightingShader.setInt("pointLightCount", pointLightCount);
@@ -273,12 +274,12 @@ void displayMap(Shader *shader)
 		for (uint8_t col = 0; col < g_mapCol ; col++)
 		{
 			float yPos = 0.0f;
-			uint8_t tile = tileMap[col][row];
+			uint8_t tile = tileMap[row][col];
 			if ( tile <= 0 )
 			{
 				//continue;
 				yPos = -1.0f;
-			}	
+			}
 
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(col, yPos, row));
@@ -314,7 +315,7 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 	if ( tileCoordinate.x < 0 || tileCoordinate.z < 0 )
 		return false;
 	
-	uint8_t tile = tileMap[unsigned(tileCoordinate.x)][unsigned(tileCoordinate.z)];
+	uint8_t tile = tileMap[unsigned(tileCoordinate.z)][unsigned(tileCoordinate.x)];
 	if ( tile <= 0 )
 		return true;
 			
@@ -502,12 +503,12 @@ uint8_t getTileAt(uint8_t col, uint8_t row)
 	if ( col >= g_mapCol || row >= g_mapRow )
 		return 0;
 	
-	return tileMap[col][row];
+	return tileMap[row][col];
 }
 
 void setTileAt(uint8_t col, uint8_t row, uint8_t value)
 {
-	tileMap[col][row] = value;
+	tileMap[row][col] = value;
 }
 
 glm::vec3 handleObjectAtPos(glm::vec3 raycastPosition)

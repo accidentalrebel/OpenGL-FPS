@@ -50,7 +50,7 @@ uniform int pointLightCount;
 uniform Material material;
 uniform DirLight dirLight;
 uniform SpotLight spotLight;
-uniform PointLight pointLights[4];
+uniform PointLight pointLights[5];
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);  
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
