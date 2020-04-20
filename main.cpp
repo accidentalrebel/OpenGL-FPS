@@ -196,10 +196,11 @@ int main()
 
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
-	directionLight.AmbientIntensity = 0.01f;
+	directionLight.AmbientIntensity = 0.51f;
 	directionLight.DiffuseIntensity = 0.01f;
 
-	Model nanosuit("assets/nanosuit/nanosuit.obj");
+	Model nanosuit("assets/Royalty_Free_Box/RoyaltyFreeBox.obj");
+	// Model nanosuit("assets/nanosuit/nanosuit.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -228,12 +229,21 @@ int main()
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glDisable(GL_TEXTURE_2D);
+		
 		// NANOSUIT
-		// glm::mat4 model = glm::mat4(1.0f);
-		// model = glm::translate(model, glm::vec3(2.0f, -1.75f, 2.0f));
-		// model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-		// lightingShader.setMat4("model", model);
-		// nanosuit.Draw(lightingShader);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 2.0f));//2.5f, -0.5f, 2.5f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		// For nanosuit
+		// model = glm::translate(model, glm::vec3(2.5f, -0.75f, 2.5f));
+		// model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		
+		lightingShader.setMat4("model", model);
+		nanosuit.Draw(lightingShader);
 
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 
@@ -302,6 +312,8 @@ void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsig
 
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			glBindVertexArray(0);
 		}
 	}
 
