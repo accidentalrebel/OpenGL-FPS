@@ -186,7 +186,7 @@ int main()
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
 	PointLight pointLights[] = {
-		PointLight(glm::vec3(1.0f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
 		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 		PointLight(glm::vec3(6.0f, -0.4f, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
@@ -204,6 +204,7 @@ int main()
 	simpleShader.setVec3("viewPos", g_camera.Position);
 	
 	Model planet("assets/planet/planet.obj");
+	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -265,6 +266,16 @@ int main()
 		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
 		lightingShader.setMat4("model", model);
 		planet.Draw(lightingShader);
+
+		// simpleShader.use();
+		// simpleShader.setMat4("projection", projection);
+		// simpleShader.setMat4("view", view);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		lightingShader.setMat4("model", model);
+		nanosuit.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
