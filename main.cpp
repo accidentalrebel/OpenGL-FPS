@@ -192,6 +192,9 @@ int main()
 		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
 		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
+
+	pointLights[0].SpecularIntensity = 1.0f;
+	
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	lightingShader.setInt("pointLightCount", pointLightCount);
 

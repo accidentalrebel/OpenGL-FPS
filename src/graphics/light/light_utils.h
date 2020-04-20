@@ -21,7 +21,7 @@ class LightUtils
     shader->setVec3(name + ".position", pointLight->Position);
     shader->setVec3(name + ".ambient", pointLight->Color * pointLight->AmbientIntensity);
     shader->setVec3(name + ".diffuse", pointLight->Color * pointLight->DiffuseIntensity);
-    shader->setVec3(name + ".specular", pointLight->Color);
+    shader->setVec3(name + ".specular", pointLight->Color * pointLight->SpecularIntensity);
     shader->setFloat(name + ".constant", pointLight->Constant);
     shader->setFloat(name + ".linear", pointLight->Linear);
     shader->setFloat(name + ".quadratic", pointLight->Quadratic);

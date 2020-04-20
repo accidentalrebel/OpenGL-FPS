@@ -10,6 +10,8 @@ class PointLight
 
 	float AmbientIntensity = 0.1f;
 	float DiffuseIntensity = 0.8f;
+	float SpecularIntensity = 0.5f;
+
 	float Constant = 1.0f;
 	float Linear = 0.35f;
 	float Quadratic = 0.44f;
