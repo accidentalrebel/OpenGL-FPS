@@ -198,7 +198,7 @@ int main()
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.01f;
-	directionLight.DiffuseIntensity = 0.01f;
+	directionLight.DiffuseIntensity = 0.2f;
 
 	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
 	simpleShader.setVec3("viewPos", g_camera.Position);
