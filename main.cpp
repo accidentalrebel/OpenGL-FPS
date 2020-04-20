@@ -15,7 +15,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
-void displayMap(Shader *shader, unsigned int VAO);
+void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsigned int specularMap);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 
@@ -196,7 +196,7 @@ int main()
 
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
-	directionLight.AmbientIntensity = 0.51f;
+	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.01f;
 
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
@@ -211,6 +211,7 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Lighting Setup
 		lightingShader.use();
 		lightingShader.setVec3("viewPos", g_camera.Position);
 		lightingShader.setFloat("material.shininess", 32.0f);
@@ -221,17 +222,20 @@ int main()
 			LightUtils::SetupPointLight(&pointLights[i], &lightingShader, "pointLights[" + std::to_string(i) + "]");
 		}
 
+		// View setup
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
+		// NANOSUIT
+		// glm::mat4 model = glm::mat4(1.0f);
+		// model = glm::translate(model, glm::vec3(2.0f, -1.75f, 2.0f));
+		// model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setMat4("model", model);
+		// nanosuit.Draw(lightingShader);
 
-		displayMap(&lightingShader, VAO);
+		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 
 		// LAMP
 		lampShader.use();
@@ -254,13 +258,6 @@ int main()
 		lightingShader.use();
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", view);
-		
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, -1.75f, 1.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
-		lightingShader.setMat4("model", model);
-
-		nanosuit.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -278,8 +275,13 @@ int main()
   return 0;
 }
 
-void displayMap(Shader *shader, unsigned int VAO)
+void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsigned int specularMap)
 {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, specularMap);
+	
 	glm::vec3 position;
 	for(uint8_t row = 0; row < g_mapRow ; row++)
 	{
