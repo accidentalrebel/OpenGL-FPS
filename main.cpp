@@ -5,8 +5,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <assimp/Importer.hpp>
 #include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
+#include "src/graphics/mesh.h"
 #include "src/graphics/light/light_utils.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
