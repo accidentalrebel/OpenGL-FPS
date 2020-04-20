@@ -143,7 +143,7 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	glEnable(GL_DEPTH_TEST);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	// --------------------------------
 	// Configuration
@@ -199,8 +199,12 @@ int main()
 	directionLight.AmbientIntensity = 0.51f;
 	directionLight.DiffuseIntensity = 0.01f;
 
-	Model nanosuit("assets/Royalty_Free_Box/RoyaltyFreeBox.obj");
-	// Model nanosuit("assets/nanosuit/nanosuit.obj");
+	// Model nanosuit("assets/Royalty_Free_Box/RoyaltyFreeBox.obj");
+
+	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
+	simpleShader.setVec3("viewPos", g_camera.Position);
+	
+	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -228,23 +232,7 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glDisable(GL_TEXTURE_2D);
 		
-		// NANOSUIT
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 2.0f));//2.5f, -0.5f, 2.5f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		// For nanosuit
-		// model = glm::translate(model, glm::vec3(2.5f, -0.75f, 2.5f));
-		// model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		
-		lightingShader.setMat4("model", model);
-		nanosuit.Draw(lightingShader);
-
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 
 		// LAMP
@@ -265,9 +253,16 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		lightingShader.use();
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", view);
+		// Nanosuit
+		simpleShader.use();
+		simpleShader.setMat4("projection", projection);
+		simpleShader.setMat4("view", view);
+		
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.5f, -0.75f, 2.5f));
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		simpleShader.setMat4("model", model);
+		nanosuit.Draw(simpleShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
