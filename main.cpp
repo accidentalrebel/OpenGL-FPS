@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -180,7 +181,7 @@ int main()
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	lightingShader.use();
 	lightingShader.setInt("material.texture_diffuse1", 0);
-	lightingShader.setInt("material.texture_specular1", 1);
+ 	lightingShader.setInt("material.texture_specular1", 1);
 
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
@@ -189,22 +190,20 @@ int main()
 		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 		PointLight(glm::vec3(6.0f, -0.4f, 3.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
-		PointLight(glm::vec3(1.0f, -0.4f, 5.0f), glm::vec3(1.0f, 1.0f, 1.0f))
+		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	lightingShader.setInt("pointLightCount", pointLightCount);
 
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
-	directionLight.AmbientIntensity = 0.51f;
+	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.01f;
-
-	// Model nanosuit("assets/Royalty_Free_Box/RoyaltyFreeBox.obj");
 
 	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
 	simpleShader.setVec3("viewPos", g_camera.Position);
 	
-	Model nanosuit("assets/nanosuit/nanosuit.obj");
+	Model robot("assets/robot/robot.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -253,16 +252,16 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		// Nanosuit
-		simpleShader.use();
-		simpleShader.setMat4("projection", projection);
-		simpleShader.setMat4("view", view);
+		// Robot
+		lightingShader.use();
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", view);
 		
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.5f, -0.75f, 2.5f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		simpleShader.setMat4("model", model);
-		nanosuit.Draw(simpleShader);
+		model = glm::translate(model, glm::vec3(3.0f, -0.25f, 1.5f));
+		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
+		lightingShader.setMat4("model", model);
+		robot.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
