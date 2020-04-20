@@ -45,6 +45,7 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
 
+uniform int hasSpecular;
 uniform vec3 viewPos;
 uniform int pointLightCount;
 uniform Material material;
@@ -81,7 +82,9 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
   // combine results
   vec3 ambient  = light.ambient  * vec3(texture(material.texture_diffuse1, TexCoords));
   vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.texture_diffuse1, TexCoords));
-  vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
+  vec3 specular;
+	if ( hasSpecular > 0 )
+		specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
   return (ambient + diffuse + specular);
 }  
 
@@ -100,7 +103,10 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
   // combine results
   vec3 ambient  = light.ambient  * vec3(texture(material.texture_diffuse1, TexCoords));
   vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.texture_diffuse1, TexCoords));
-	vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
+	vec3 specular;
+	if ( hasSpecular > 0 )
+		specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
+	
   ambient  *= attenuation;
   diffuse  *= attenuation;
   specular *= attenuation;

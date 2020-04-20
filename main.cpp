@@ -203,7 +203,7 @@ int main()
 	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
 	simpleShader.setVec3("viewPos", g_camera.Position);
 	
-	Model robot("assets/robot/robot.obj");
+	Model planet("assets/planet/planet.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -219,6 +219,7 @@ int main()
 		lightingShader.use();
 		lightingShader.setVec3("viewPos", g_camera.Position);
 		lightingShader.setFloat("material.shininess", 32.0f);
+		lightingShader.setInt("hasSpecular", 1);
 		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
 
 		for ( unsigned int i = 0; i < pointLightCount ; ++i )
@@ -252,16 +253,17 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		// Robot
+		// Planet
 		lightingShader.use();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
+		lightingShader.setInt("hasSpecular", 0);
 		
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(3.0f, -0.25f, 1.5f));
+		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
 		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
 		lightingShader.setMat4("model", model);
-		robot.Draw(lightingShader);
+		planet.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
