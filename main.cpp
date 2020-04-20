@@ -8,14 +8,14 @@
 #include <assimp/Importer.hpp>
 #include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
-#include "src/graphics/mesh.h"
+#include "src/graphics/model.h"
 #include "src/graphics/light/light_utils.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
-void displayMap(Shader *shader);
+void displayMap(Shader *shader, unsigned int VAO);
 void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 
@@ -194,11 +194,12 @@ int main()
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	lightingShader.setInt("pointLightCount", pointLightCount);
 
-	
 	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
-	directionLight.AmbientIntensity = 0.01f;
+	directionLight.AmbientIntensity = 0.51f;
 	directionLight.DiffuseIntensity = 0.01f;
+
+	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -225,14 +226,12 @@ int main()
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
 
-		displayMap(&lightingShader);
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		glBindVertexArray(VAO);
+		displayMap(&lightingShader, VAO);
 
 		// LAMP
 		lampShader.use();
@@ -252,6 +251,17 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		lightingShader.use();
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", view);
+		
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, -1.75f, 1.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		lightingShader.setMat4("model", model);
+
+		nanosuit.Draw(lightingShader);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -268,7 +278,7 @@ int main()
   return 0;
 }
 
-void displayMap(Shader *shader)
+void displayMap(Shader *shader, unsigned int VAO)
 {
 	glm::vec3 position;
 	for(uint8_t row = 0; row < g_mapRow ; row++)
@@ -288,6 +298,7 @@ void displayMap(Shader *shader)
 			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 			shader->setMat4("model", model);
 
+			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 	}

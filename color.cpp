@@ -5,10 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
+#include "src/graphics/model.h"
 #include "src/graphics/light/light_utils.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -161,6 +159,8 @@ int main()
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-0.2f, -1.0f, -0.3f));
 	SpotLight spotLight(glm::vec3(1.0f, 1.0f, 1.0f), 15.5f, 17.5f);
 
+	Model nanosuit("assets/nanosuit/nanosuit.obj");
+
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -235,6 +235,9 @@ int main()
 			glBindVertexArray(lightVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		lightingShader.use();
+		nanosuit.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
