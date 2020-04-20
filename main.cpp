@@ -179,8 +179,8 @@ int main()
 
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	lightingShader.use();
-	lightingShader.setInt("material.diffuse", 0);
-	lightingShader.setInt("material.specular", 1);
+	lightingShader.setInt("material.texture_diffuse1", 0);
+	lightingShader.setInt("material.texture_specular1", 1);
 
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
