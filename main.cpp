@@ -188,7 +188,7 @@ int main()
 	PointLight pointLights[] = {
 		PointLight(glm::vec3(1.0f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
 		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-		PointLight(glm::vec3(6.0f, -0.4f, 3.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+		PointLight(glm::vec3(6.0f, -0.4f, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
 		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
@@ -262,6 +262,7 @@ int main()
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
 		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
+		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
 		lightingShader.setMat4("model", model);
 		planet.Draw(lightingShader);
 
