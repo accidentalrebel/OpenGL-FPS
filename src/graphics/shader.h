@@ -14,6 +14,8 @@
 #include <sstream>
 #include <iostream>
 
+using namespace std;
+
 class Shader
 {
  public:
@@ -21,18 +23,18 @@ class Shader
 
   Shader(const char* vertexPath, const char* fragmentPath)
 	{
-		std::string vertexCode;
-		std::string fragmentCode;
-		std::ifstream vShaderFile;
-		std::ifstream fShaderFile;
+		string vertexCode;
+		string fragmentCode;
+		ifstream vShaderFile;
+		ifstream fShaderFile;
 
-		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
+		fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
 		try
 		{
 			vShaderFile.open(vertexPath);
 			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
+			stringstream vShaderStream, fShaderStream;
 			vShaderStream << vShaderFile.rdbuf();
 			fShaderStream << fShaderFile.rdbuf();
 
@@ -42,9 +44,9 @@ class Shader
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
 		}
-		catch(std::ifstream::failure e)
+		catch(ifstream::failure e)
 		{
-			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
+			cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << endl;
 		}
 		const char* vShaderCode = vertexCode.c_str();
 		const char* fShaderCode = fragmentCode.c_str();
@@ -62,7 +64,7 @@ class Shader
 		if (!success)
 		{
 			glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+			cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
 		}
 
 		// FRAGMENT
@@ -74,7 +76,7 @@ class Shader
 		if (!success)
 		{
 			glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+			cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
 		}
 
 		// Shader program
@@ -87,7 +89,7 @@ class Shader
 		if (!success)
 		{
 			glGetProgramInfoLog(ID, 512, NULL, infoLog);
-			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << endl;
 		}
 
 		glDeleteShader(vertex);
@@ -99,42 +101,45 @@ class Shader
 		glUseProgram(ID);
 	}
   
-  void setBool(const std::string &name, bool value) const
+  void setBool(const string &name, bool value) const
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 	}
-  void setInt(const std::string &name, int value) const
+  void setInt(const string &name, int value) const
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 	}
-  void setFloat(const std::string &name, float value) const
+  void setFloat(const string &name, float value) const
 	{
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	void setVec4(const std::string &name, float v1, float v2, float v3, float v4) const
+	void setVec4(const string &name, float v1, float v2, float v3, float v4) const
 	{
 		glUniform4f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3, v4);
 	}
-	void setVec3(const std::string &name, float v1, float v2, float v3) const
+	void setVec3(const string &name, float v1, float v2, float v3) const
 	{
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3);
 	}
-	void setVec3(const std::string &name, glm::vec3 v) const
+	void setVec3(const string &name, glm::vec3 v) const
 	{
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), v.x, v.y, v.z);
 	}
-	void setMat4(const std::string &name, glm::mat4 mat) const
+	void setMat4(const string &name, glm::mat4 mat) const
 	{
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 	}
 
-	static unsigned int loadTexture(char const * path)
+	static unsigned int LoadTextureFromFile(char const * path, const string &directory)
 	{
+		string filename = string(path);
+		filename = directory + '/' + filename;
+		
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
 			GLenum format;
@@ -158,7 +163,7 @@ class Shader
     }
     else
     {
-			std::cout << "Texture failed to load at path: " << path << std::endl;
+			cout << "Texture failed to load at path: " << filename.c_str() << endl;
 			stbi_image_free(data);
     }
 

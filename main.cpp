@@ -174,8 +174,8 @@ int main()
 
 	// TEXTURES AND SHADERS
 	stbi_set_flip_vertically_on_load(true);
-	unsigned int diffuseMap = Shader::loadTexture("assets/tile.png");
-	unsigned int specularMap = Shader::loadTexture("assets/container2_specular.png");
+	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
+	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets");
 
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	lightingShader.use();
