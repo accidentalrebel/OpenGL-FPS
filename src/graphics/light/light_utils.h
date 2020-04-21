@@ -8,33 +8,36 @@
 class LightUtils
 {
  public:
-	static void SetupDirectionLight(DirectionLight * directionLight, Shader * shader, const std::string &name)
+	static void SetupDirectionLight(DirectionLight * directionLight, Shader * shader, const std::string &uniformName)
 	{
-		shader->setVec3(name + ".direction", directionLight->Direction);
-		shader->setVec3(name + ".ambient", directionLight->Color * directionLight->AmbientIntensity);
-		shader->setVec3(name + ".diffuse", directionLight->Color * directionLight->DiffuseIntensity);
-		shader->setVec3(name + ".specular", directionLight->Color * directionLight->SpecularIntensity);
+		shader->setVec3(uniformName + ".direction", directionLight->Direction);
+		shader->setVec3(uniformName + ".ambient", directionLight->Color * directionLight->AmbientIntensity);
+		shader->setVec3(uniformName + ".diffuse", directionLight->Color * directionLight->DiffuseIntensity);
+		shader->setVec3(uniformName + ".specular", directionLight->Color * directionLight->SpecularIntensity);
 	}
 	
-  static void SetupPointLight(PointLight *pointLight, Shader* shader, const std::string &name)
+  static void SetupPointLight(PointLight *pointLight, Shader* shader, const std::string &uniformName)
   {
-    shader->setVec3(name + ".position", pointLight->Position);
-    shader->setVec3(name + ".ambient", pointLight->Color * pointLight->AmbientIntensity);
-    shader->setVec3(name + ".diffuse", pointLight->Color * pointLight->DiffuseIntensity);
-    shader->setVec3(name + ".specular", pointLight->Color * pointLight->SpecularIntensity);
-    shader->setFloat(name + ".constant", pointLight->Constant);
-    shader->setFloat(name + ".linear", pointLight->Linear);
-    shader->setFloat(name + ".quadratic", pointLight->Quadratic);
+    shader->setVec3(uniformName + ".position", pointLight->Position);
+    shader->setVec3(uniformName + ".ambient", pointLight->Color * pointLight->AmbientIntensity);
+    shader->setVec3(uniformName + ".diffuse", pointLight->Color * pointLight->DiffuseIntensity);
+    shader->setVec3(uniformName + ".specular", pointLight->Color * pointLight->SpecularIntensity);
+    shader->setFloat(uniformName + ".constant", pointLight->Constant);
+    shader->setFloat(uniformName + ".linear", pointLight->Linear);
+    shader->setFloat(uniformName + ".quadratic", pointLight->Quadratic);
   }
 
-	static void SetupSpotLight(SpotLight *spotLight, Shader* shader, const std::string &name)
+	static void SetupSpotLight(SpotLight *spotLight, Shader* shader, const std::string &uniformName)
 	{
-		shader->setVec3(name + "position", spotLight->Position);
-		shader->setVec3(name + "direction", spotLight->Direction);
-		shader->setFloat(name + "cutOff", glm::cos(glm::radians(spotLight->CutOff)));
-		shader->setFloat(name + "outerCutOff", glm::cos(glm::radians(spotLight->OuterCutOff)));
-		shader->setVec3(name + "ambient", spotLight->Color * spotLight->AmbientIntensity);
-		shader->setVec3(name + "diffuse", spotLight->Color * spotLight->DiffuseIntensity);
-		shader->setVec3(name + "specular", spotLight->Color);
+		shader->setVec3(uniformName + ".position", spotLight->Position);
+		shader->setVec3(uniformName + ".direction", spotLight->Direction);
+		shader->setFloat(uniformName + ".cutOff", glm::cos(glm::radians(spotLight->CutOff)));
+		shader->setFloat(uniformName + ".outerCutOff", glm::cos(glm::radians(spotLight->OuterCutOff)));
+		shader->setVec3(uniformName + ".ambient", spotLight->Color * spotLight->AmbientIntensity);
+		shader->setVec3(uniformName + ".diffuse", spotLight->Color * spotLight->DiffuseIntensity);
+		shader->setVec3(uniformName + ".specular", spotLight->Color * spotLight->SpecularIntensity);
+		shader->setFloat(uniformName + ".constant", spotLight->Constant);
+    shader->setFloat(uniformName + ".linear", spotLight->Linear);
+    shader->setFloat(uniformName + ".quadratic", spotLight->Quadratic);
 	}
 };

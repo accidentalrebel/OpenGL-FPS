@@ -203,6 +203,8 @@ int main()
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
 
+	SpotLight spotLight(glm::vec3(1.0f), 12.5f, 15.0f);
+
 	nanoShader.use();
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	nanoShader.setInt("material.texture_specular1", 1);
@@ -281,16 +283,10 @@ int main()
 			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
 		}
 
-		nanoShader.setVec3("spotLight.position", g_camera.Position);
-		nanoShader.setVec3("spotLight.direction", g_camera.Front);
-		nanoShader.setVec3("spotLight.ambient", glm::vec3(0.5f));
-		nanoShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-		nanoShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-		nanoShader.setFloat("spotLight.constant", 1.0f);
-		nanoShader.setFloat("spotLight.linear", 0.09);
-		nanoShader.setFloat("spotLight.quadratic", 0.032);
-		nanoShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		nanoShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+		spotLight.Position = g_camera.Position;
+		spotLight.Direction = g_camera.Front;
+		spotLight.AmbientIntensity = 0.5f;
+ 		LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
 
 		nanoShader.setMat4("projection", projection);
 		nanoShader.setMat4("view", view);
