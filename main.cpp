@@ -203,8 +203,7 @@ int main()
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
 
-	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
-	simpleShader.setVec3("viewPos", g_camera.Position);
+	Shader nanoShader("shaders/nanosuit.vs", "shaders/nanosuit.fs");
 	
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
@@ -270,15 +269,15 @@ int main()
 		lightingShader.setMat4("model", model);
 		planet.Draw(lightingShader);
 
-		// simpleShader.use();
-		// simpleShader.setMat4("projection", projection);
-		// simpleShader.setMat4("view", view);
+ 		nanoShader.use();
+		nanoShader.setMat4("projection", projection);
+		nanoShader.setMat4("view", view);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-		lightingShader.setMat4("model", model);
-		nanosuit.Draw(lightingShader);
+		nanoShader.setMat4("model", model);
+		nanosuit.Draw(nanoShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
