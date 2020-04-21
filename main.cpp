@@ -145,6 +145,11 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// Shaders
+	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
+	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
+	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 	
 	// --------------------------------
 	// Configuration
@@ -178,12 +183,9 @@ int main()
 	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
 	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets");
 
-	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	lightingShader.use();
 	lightingShader.setInt("material.texture_diffuse1", 0);
  	lightingShader.setInt("material.texture_specular1", 1);
-
-	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
 	PointLight pointLights[] = {
 		PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
@@ -193,8 +195,6 @@ int main()
 		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
 
-	pointLights[0].SpecularIntensity = 1.0f;
-	
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	lightingShader.setInt("pointLightCount", pointLightCount);
 
@@ -203,8 +203,9 @@ int main()
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
 
-	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
+	nanoShader.use();
 	nanoShader.setInt("material.texture_diffuse1", 0);
+	nanoShader.setInt("material.texture_specular1", 1);
 	
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
@@ -271,6 +272,26 @@ int main()
 		planet.Draw(lightingShader);
 
  		nanoShader.use();
+		nanoShader.setVec3("viewPos", g_camera.Position);
+		nanoShader.setFloat("material.shininess", 32.0f);
+
+		LightUtils::SetupDirectionLight(&directionLight, &nanoShader, "dirLight");
+		for ( unsigned int i = 0; i < pointLightCount ; ++i )
+		{
+			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
+		}
+
+		nanoShader.setVec3("spotLight.position", g_camera.Position);
+		nanoShader.setVec3("spotLight.direction", g_camera.Front);
+		nanoShader.setVec3("spotLight.ambient", glm::vec3(0.5f));
+		nanoShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+		nanoShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		nanoShader.setFloat("spotLight.constant", 1.0f);
+		nanoShader.setFloat("spotLight.linear", 0.09);
+		nanoShader.setFloat("spotLight.quadratic", 0.032);
+		nanoShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		nanoShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
 		nanoShader.setMat4("projection", projection);
 		nanoShader.setMat4("view", view);
 
