@@ -129,7 +129,6 @@ class Shader
 	{
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 	}
-
 	static unsigned int LoadTextureFromFile(char const * path, const string &directory)
 	{
 		string filename = string(path);

@@ -110,11 +110,6 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 };
 
-// unsigned int indices[] = {
-// 	0, 1, 3,
-// 	1, 2 ,3
-// };
-
 int main()
 {
   glfwInit();
@@ -154,10 +149,6 @@ int main()
 	// --------------------------------
 	// Configuration
 	// --------------------------------
-	// NOTE:
-	// Vertex Buffer Objects (VBO) - Can store large number of vertices into the GPUs memory
-	// Vertex Array Objects (VAO) - This helps in storing vertex calls so we don't have to do those calls again
-	// Element Buffer Objcets (EBO) - Stores indices to help decide which vertices to draw. In the example, it made drawing two adjacent triangles use less vertex points
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -237,7 +228,7 @@ int main()
 		spotLight.Position = g_camera.Position;
 		spotLight.Direction = g_camera.Front;
 		spotLight.AmbientIntensity = 0.5f;
- 		LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
+ 		// LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
 
 		// Draw nanosuit
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);

@@ -39,5 +39,6 @@ class LightUtils
 		shader->setFloat(uniformName + ".constant", spotLight->Constant);
     shader->setFloat(uniformName + ".linear", spotLight->Linear);
     shader->setFloat(uniformName + ".quadratic", spotLight->Quadratic);
+		shader->setBool("isSpotLightSetup", true);
 	}
 };
