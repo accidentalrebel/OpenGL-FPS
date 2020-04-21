@@ -15,6 +15,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale);
+void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -75,7 +77,8 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader shader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
+    Shader normalShader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
+		Shader borderShader("shaders/depth_testing.vs", "shaders/border.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -165,8 +168,11 @@ int main()
 
     // shader configuration
     // --------------------
-    shader.use();
-    shader.setInt("texture1", 0);
+    normalShader.use();
+    normalShader.setInt("texture1", 0);
+
+		borderShader.use();
+    borderShader.setInt("texture1", 0);
 
     // render loop
     // -----------
@@ -184,32 +190,28 @@ int main()
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glEnable(GL_STENCIL_TEST);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-        shader.use();
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-        // cubes
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture); 	
-        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        shader.setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        shader.setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        shader.setMat4("model", glm::mat4(1.0f));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+				glStencilMask(0x00);
+				normalShader.use();
+				drawFloor(normalShader, planeVAO, floorTexture);
+
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glStencilMask(0xFF);
+				drawTwoCubes(normalShader, cubeVAO, cubeTexture, 1.0f);
+
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+				glStencilMask(0x00);
+				glDisable(GL_DEPTH_TEST);
+				borderShader.use();
+				drawTwoCubes(borderShader, cubeVAO, cubeTexture, 1.1f);
+				glStencilMask(0xFF);
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glEnable(GL_DEPTH_TEST);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -226,6 +228,41 @@ int main()
 
     glfwTerminate();
     return 0;
+}
+
+void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale)
+{
+	shader.use();
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
+
+	// cubes
+	glBindVertexArray(cubeVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, cubeTexture); 	
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+	model = glm::scale(model, glm::vec3(scale));
+	shader.setMat4("model", model);
+	
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(scale));
+	shader.setMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+ }
+
+void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
+{
+	// floor
+	glBindVertexArray(planeVAO);
+	glBindTexture(GL_TEXTURE_2D, floorTexture);
+	shader.setMat4("model", glm::mat4(1.0f));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
