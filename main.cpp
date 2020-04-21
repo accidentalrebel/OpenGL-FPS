@@ -204,6 +204,7 @@ int main()
 	directionLight.DiffuseIntensity = 0.2f;
 
 	Shader nanoShader("shaders/nanosuit.vs", "shaders/nanosuit.fs");
+	nanoShader.setInt("material.texture_diffuse1", 0);
 	
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");

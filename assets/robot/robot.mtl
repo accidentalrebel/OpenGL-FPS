@@ -13,6 +13,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.2 0.2 0.2
+map_Kd robot-red.png
 newmtl Red_032Medium_032Gloss_032Plastic_046lxp
 Kd 0.555294 0.0752941 0.0752941
 Ns 128
@@ -20,6 +21,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.06 0.06 0.06
+map_Kd robot-green.png
 newmtl inside
 Kd 0.0393846 0.0237375 0.0075622
 Ns 256
@@ -27,6 +29,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.04 0.04 0.04
+map_Kd robot-blue.png
 newmtl metal2
 Kd 0.48 0.48 0.48
 Ns 128
@@ -34,6 +37,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.5 0.5 0.5
+map_Kd robot-yellow.png
 newmtl outsde
 Kd 0.8 0.41285 0
 Ns 256
@@ -41,6 +45,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.05 0.05 0.05
+map_Kd robot-red.png
 newmtl preto
 Kd 0.1 0.1 0.1
 Ns 128
@@ -48,3 +53,4 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.04 0.04 0.04
+map_Kd robot-green.png

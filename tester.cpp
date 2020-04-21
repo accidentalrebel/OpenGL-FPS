@@ -78,6 +78,7 @@ int main()
 	// build and compile our shader zprogram
 	// ------------------------------------
 	Shader boxShader("shaders/test-box.vs", "shaders/test-box.fs");
+	Shader simpleShader("shaders/simple.vs", "shaders/simple.fs");
 	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 
@@ -180,6 +181,7 @@ int main()
 
 	Model cyborg("assets/cyborg/cyborg.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
+	Model robot("assets/robot/robot.obj");
 
 	// shader configuration
 	// --------------------
@@ -371,6 +373,17 @@ int main()
 		nanoShader.setMat4("model", model);
 		nanosuit.Draw(nanoShader);
 
+		simpleShader.use();
+		simpleShader.setMat4("projection", projection);
+		simpleShader.setMat4("view", view);
+
+		// Draw the robot
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.4f));
+		simpleShader.setMat4("model", model);
+		robot.Draw(simpleShader);
+		
 		// also draw the lamp object(s)
 		lampShader.use();
 		lampShader.setMat4("projection", projection);
