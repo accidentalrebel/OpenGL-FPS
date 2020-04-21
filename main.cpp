@@ -198,6 +198,7 @@ int main()
 	lightingShader.setInt("material.texture_diffuse1", 0);
 	lightingShader.setInt("material.texture_specular1", 1);
 
+	// TODO: Nano shader should be the new lighting shader
 	nanoShader.use();
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	nanoShader.setInt("material.texture_specular1", 1);
@@ -236,6 +237,7 @@ int main()
 		}
 		else
 		{
+			// TODO: Should also have an option to disable point lights if needed.
 			nanoShader.setBool("isSpotLightSetup", false);
 		}
 
