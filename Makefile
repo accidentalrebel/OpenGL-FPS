@@ -1,4 +1,4 @@
-OBJS = src/contrib/glad.c tester.cpp
+OBJS = src/contrib/glad.c main.cpp
 
 OBJ_NAME = main
 

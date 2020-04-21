@@ -17,31 +17,31 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow *window);
 void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsigned int specularMap);
-void getPositionFromTileIndex(uint8_t index, glm::vec3 *positions);
+void getPositionFromTileIndex(unsigned int index, glm::vec3 *positions);
 bool canMoveToPosition(glm::vec3 currentPosition);
 
 glm::vec3 getTileCoords(glm::vec3 currentPosition, glm::vec3 centerOffset);
 glm::vec3 castRay(glm::vec3, glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
-uint8_t getTileAt(uint8_t col, uint8_t row);
-void setTileAt(uint8_t col, uint8_t row, uint8_t value);
+unsigned int getTileAt(unsigned int col, unsigned int row);
+void setTileAt(unsigned int col, unsigned int row, unsigned int value);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
 float g_lastKeyPressed = 0;
 bool g_firstMouse = true;
 
-const uint8_t maxMarkerCount = 10;
+const unsigned int maxMarkerCount = 10;
 glm::vec3 g_markers[maxMarkerCount];
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const glm::vec3 g_tileCenterOffset = glm::vec3(0.5f, 0, 0.5f);
-const uint8_t g_mapCol = 8;
-const uint8_t g_mapRow = 8;
+const unsigned int g_mapCol = 8;
+const unsigned int g_mapRow = 8;
 
-uint8_t tileMap[][g_mapRow] = {
+unsigned int tileMap[][g_mapRow] = {
  	{ 1, 1, 1, 1, 1, 1, 1, 1 },
 	{ 1, 0, 0, 0, 0, 0, 0, 1 },
 	{ 1, 0, 0, 0, 0, 0, 0, 1 },
@@ -203,7 +203,7 @@ int main()
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
 
-	Shader nanoShader("shaders/nanosuit.vs", "shaders/nanosuit.fs");
+	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	
 	Model planet("assets/planet/planet.obj");
@@ -304,12 +304,12 @@ void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsig
 	glBindTexture(GL_TEXTURE_2D, specularMap);
 	
 	glm::vec3 position;
-	for(uint8_t row = 0; row < g_mapRow ; row++)
+	for(unsigned int row = 0; row < g_mapRow ; row++)
 	{
-		for (uint8_t col = 0; col < g_mapCol ; col++)
+		for (unsigned int col = 0; col < g_mapCol ; col++)
 		{
 			float yPos = 0.0f;
-			uint8_t tile = tileMap[row][col];
+			unsigned int tile = tileMap[row][col];
 			if ( tile <= 0 )
 			{
 				//continue;
@@ -329,7 +329,7 @@ void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsig
 	}
 
 	// Markers
-	for ( uint8_t index = 0 ; index < maxMarkerCount ; ++index )
+	for ( unsigned int index = 0 ; index < maxMarkerCount ; ++index )
 	{
  		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(g_markers[index].x, -0.5f, g_markers[index].z));
@@ -353,7 +353,7 @@ bool canMoveToPosition(glm::vec3 currentPosition)
 	if ( tileCoordinate.x < 0 || tileCoordinate.z < 0 )
 		return false;
 	
-	uint8_t tile = tileMap[unsigned(tileCoordinate.z)][unsigned(tileCoordinate.x)];
+	unsigned int tile = tileMap[unsigned(tileCoordinate.z)][unsigned(tileCoordinate.x)];
 	if ( tile <= 0 )
 		return true;
 			
@@ -490,7 +490,7 @@ glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDis
 	// https://theshoemaker.de/2016/02/ray-casting-in-2d-grids/
 	const float tileSize = 1.0f;
 
-	for ( uint8_t i = 0 ; i < maxMarkerCount ; ++i )
+	for ( unsigned int i = 0 ; i < maxMarkerCount ; ++i )
 	{
 		g_markers[i] = g_camera.Position;
 	}
@@ -502,7 +502,7 @@ glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDis
 	int8_t tileOffsetX = rayDirection.x > 0 ? 0: -1;
 	int8_t tileOffsetZ = rayDirection.z > 0 ? 0: -1;
 	
-	uint8_t index = 0;
+	unsigned int index = 0;
 	float t = 0;
 	
 	while( index < maxMarkerCount )
@@ -536,7 +536,7 @@ glm::vec3 castRay(glm::vec3 startPosition, glm::vec3 rayDirection, float castDis
 	return glm::vec3();
 }
 
-uint8_t getTileAt(uint8_t col, uint8_t row)
+unsigned int getTileAt(unsigned int col, unsigned int row)
 {
 	if ( col >= g_mapCol || row >= g_mapRow )
 		return 0;
@@ -544,7 +544,7 @@ uint8_t getTileAt(uint8_t col, uint8_t row)
 	return tileMap[row][col];
 }
 
-void setTileAt(uint8_t col, uint8_t row, uint8_t value)
+void setTileAt(unsigned int col, unsigned int row, unsigned int value)
 {
 	tileMap[row][col] = value;
 }
@@ -552,7 +552,7 @@ void setTileAt(uint8_t col, uint8_t row, uint8_t value)
 glm::vec3 handleObjectAtPos(glm::vec3 raycastPosition)
 {
 	glm::vec3 tileCoordinate = getTileCoords(raycastPosition, g_tileCenterOffset);
-	uint8_t tile = getTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z));
+	unsigned int tile = getTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z));
 	if ( tile > 0 )
 	{
 		//setTileAt(unsigned(tileCoordinate.x),unsigned(tileCoordinate.z), 0);
@@ -583,7 +583,7 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 }
 
 // HELPERS ====
-void getPositionFromTileIndex(uint8_t index, glm::vec3 *position)
+void getPositionFromTileIndex(unsigned int index, glm::vec3 *position)
 {
 	position->z = floor(index / g_mapCol);
 	position->y = 0;

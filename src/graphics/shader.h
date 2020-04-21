@@ -46,7 +46,7 @@ class Shader
 		}
 		catch(ifstream::failure e)
 		{
-			cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << endl;
+			cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ::" << vertexPath << "," << fragmentPath << endl;
 		}
 		const char* vShaderCode = vertexCode.c_str();
 		const char* fShaderCode = fragmentCode.c_str();
