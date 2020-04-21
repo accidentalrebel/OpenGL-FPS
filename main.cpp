@@ -41,6 +41,8 @@ const glm::vec3 g_tileCenterOffset = glm::vec3(0.5f, 0, 0.5f);
 const unsigned int g_mapCol = 8;
 const unsigned int g_mapRow = 8;
 
+bool g_isFlashLightOn = false;
+
 unsigned int tileMap[][g_mapRow] = {
  	{ 1, 1, 1, 1, 1, 1, 1, 1 },
 	{ 1, 0, 0, 0, 0, 0, 0, 1 },
@@ -224,11 +226,18 @@ int main()
 		
 		for ( unsigned int i = 0; i < pointLightCount ; ++i )
 			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
-		
-		spotLight.Position = g_camera.Position;
-		spotLight.Direction = g_camera.Front;
-		spotLight.AmbientIntensity = 0.5f;
- 		// LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
+
+		if ( g_isFlashLightOn )
+		{
+			spotLight.Position = g_camera.Position;
+			spotLight.Direction = g_camera.Front;
+			spotLight.AmbientIntensity = 0.5f;
+			LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
+		}
+		else
+		{
+			nanoShader.setBool("isSpotLightSetup", false);
+		}
 
 		// Draw nanosuit
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -462,6 +471,8 @@ void processInput(GLFWwindow *window)
 			g_camera.UpdatePosition(currentPosition);
 	}
 
+	// TODO: Improve this. Should log the lastKeyPressed regardless of what it is.
+	// OR. Make an input handler class.
 	if ( glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_PRESS)
 	{
 		g_lastKeyPressed = GLFW_KEY_PERIOD;
@@ -469,6 +480,19 @@ void processInput(GLFWwindow *window)
 	else if ( g_lastKeyPressed == GLFW_KEY_PERIOD && glfwGetKey(window, GLFW_KEY_PERIOD ) == GLFW_RELEASE)
 	{
 		castRay(currentPosition, g_camera.Front, 5);
+		g_lastKeyPressed = 0;
+	}
+
+	if ( glfwGetKey(window, GLFW_KEY_F ) == GLFW_PRESS)
+	{
+		g_lastKeyPressed = GLFW_KEY_F;
+	}
+	else if ( g_lastKeyPressed == GLFW_KEY_F && glfwGetKey(window, GLFW_KEY_F ) == GLFW_RELEASE)
+	{
+		if(g_isFlashLightOn )
+			g_isFlashLightOn = false;
+		else
+			g_isFlashLightOn = true;
 		g_lastKeyPressed = 0;
 	}
 }
