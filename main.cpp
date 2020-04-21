@@ -147,6 +147,7 @@ int main()
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
+	Shader borderShader("shaders/depth_testing.vs", "shaders/border.fs");
 	
 	// --------------------------------
 	// Configuration
@@ -203,6 +204,9 @@ int main()
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	nanoShader.setInt("material.texture_specular1", 1);
 
+	borderShader.use();
+	borderShader.setInt("texture1", 0); // TODO: We may be able to remove this.
+
 	// MODELS SETUP
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
@@ -214,8 +218,13 @@ int main()
 		// --------------------------------
 		// Drawing
 		// --------------------------------
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+		glStencilMask(0x00);
 
 		// Shader setup
 		nanoShader.use();
@@ -280,6 +289,10 @@ int main()
 		// Setup the shader
 		nanoShader.use();
 
+		// We freeze the stencil
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+		
 		// Draw the planet
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
@@ -287,6 +300,28 @@ int main()
 		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
 		nanoShader.setMat4("model", model);
 		planet.Draw(nanoShader);
+
+		// We disable the stencil
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+
+		// TODO: Make a draw planet function
+		borderShader.use();
+		borderShader.setMat4("projection", projection);
+		borderShader.setMat4("view", view);
+		
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
+		model = glm::scale(model, glm::vec3(0.31f, 0.31f, 0.31f));
+		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
+		borderShader.setMat4("model", model);
+		planet.Draw(borderShader);
+
+		// Return stencil to normal
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
 
  		glfwSwapBuffers(window);
 		glfwPollEvents();

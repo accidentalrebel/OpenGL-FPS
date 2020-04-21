@@ -1,4 +1,4 @@
-OBJS = src/contrib/glad.c depth_testing.cpp
+OBJS = src/contrib/glad.c main.cpp # depth_testing.cpp
 
 OBJ_NAME = main
 
