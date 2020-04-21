@@ -225,8 +225,8 @@ int main()
 		*/
 		// directional light
 		boxShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		boxShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		boxShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		boxShader.setVec3("dirLight.ambient", glm::vec3(0.01f));
+		boxShader.setVec3("dirLight.diffuse", glm::vec3(0.05f));
 		boxShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 		// point light 1
 		boxShader.setVec3("pointLights[0].position", pointLightPositions[0]);
@@ -310,8 +310,8 @@ int main()
 		nanoShader.setFloat("material.shininess", 32.0f);
 
 		nanoShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		nanoShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		nanoShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		nanoShader.setVec3("dirLight.ambient", glm::vec3(0.01f));
+		nanoShader.setVec3("dirLight.diffuse", glm::vec3(0.05f));
 		nanoShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 
 		// point light 1
@@ -349,7 +349,7 @@ int main()
 		// spotLight
 		nanoShader.setVec3("spotLight.position", camera.Position);
 		nanoShader.setVec3("spotLight.direction", camera.Front);
-		nanoShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+		nanoShader.setVec3("spotLight.ambient", glm::vec3(0.5f));
 		nanoShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
 		nanoShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
 		nanoShader.setFloat("spotLight.constant", 1.0f);
@@ -373,16 +373,16 @@ int main()
 		nanoShader.setMat4("model", model);
 		nanosuit.Draw(nanoShader);
 
-		simpleShader.use();
-		simpleShader.setMat4("projection", projection);
-		simpleShader.setMat4("view", view);
+		// simpleShader.use();
+		// simpleShader.setMat4("projection", projection);
+		// simpleShader.setMat4("view", view);
 
 		// Draw the robot
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.4f));
-		simpleShader.setMat4("model", model);
-		robot.Draw(simpleShader);
+		nanoShader.setMat4("model", model);
+		robot.Draw(nanoShader);
 		
 		// also draw the lamp object(s)
 		lampShader.use();
