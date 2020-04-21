@@ -178,15 +178,12 @@ int main()
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// TEXTURES AND SHADERS
+	// TEXTURES SETUP
 	stbi_set_flip_vertically_on_load(true);
 	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
 	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets");
 
-	lightingShader.use();
-	lightingShader.setInt("material.texture_diffuse1", 0);
- 	lightingShader.setInt("material.texture_specular1", 1);
-
+	// LIGHTS SETUP
 	PointLight pointLights[] = {
 		PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
 		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
@@ -196,19 +193,23 @@ int main()
 	};
 
 	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
-	lightingShader.setInt("pointLightCount", pointLightCount);
-
-	// LIGHTS SETUP
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
 
 	SpotLight spotLight(glm::vec3(1.0f), 12.5f, 15.0f);
 
+	// SHADERS SETUP
+	lightingShader.use();
+	lightingShader.setInt("pointLightCount", pointLightCount);
+	lightingShader.setInt("material.texture_diffuse1", 0);
+	lightingShader.setInt("material.texture_specular1", 1);
+
 	nanoShader.use();
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	nanoShader.setInt("material.texture_specular1", 1);
-	
+
+	// MODELS SETUP
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
@@ -222,36 +223,49 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Lighting Setup
-		lightingShader.use();
-		lightingShader.setVec3("viewPos", g_camera.Position);
-		lightingShader.setFloat("material.shininess", 32.0f);
-		lightingShader.setInt("hasSpecular", 1);
-		LightUtils::SetupDirectionLight(&directionLight, &lightingShader, "dirLight");
+		// Shader setup
+		nanoShader.use();
+		nanoShader.setVec3("viewPos", g_camera.Position);
+		nanoShader.setFloat("material.shininess", 32.0f);
 
+		// Lights setup
+		LightUtils::SetupDirectionLight(&directionLight, &nanoShader, "dirLight");
+		
 		for ( unsigned int i = 0; i < pointLightCount ; ++i )
-		{
-			LightUtils::SetupPointLight(&pointLights[i], &lightingShader, "pointLights[" + std::to_string(i) + "]");
-		}
+			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
+		
+		spotLight.Position = g_camera.Position;
+		spotLight.Direction = g_camera.Front;
+		spotLight.AmbientIntensity = 0.5f;
+ 		LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
 
-		// View setup
+		// Draw nanosuit
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
-		lightingShader.setMat4("projection", projection);
-		lightingShader.setMat4("view", view);
+		nanoShader.setMat4("projection", projection);
+		nanoShader.setMat4("view", view);
 		
-		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		nanoShader.setMat4("model", model);
+		nanosuit.Draw(nanoShader);
 
-		// LAMP
+		// Draw map
+		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
+
+		// Shader sutp
 		lampShader.use();
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", view);
 
+		// TODO: Move lighting to a separate function
+		// Draw lamps
 		for(unsigned int i = 0; i < pointLightCount; i++)
 		{
 			lampShader.setVec3("lightColor", pointLights[i].Color * 0.8f);
 			
-			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::mat4(1.0f);
 			model = glm::translate(model, pointLights[i].Position);
 			model = glm::scale(model, glm::vec3(0.2f));
 			lampShader.setMat4("model", model);
@@ -260,44 +274,19 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		// Planet
-		lightingShader.use();
-		lightingShader.setMat4("projection", projection);
-		lightingShader.setMat4("view", view);
-		lightingShader.setInt("hasSpecular", 0);
-		
-		glm::mat4 model = glm::mat4(1.0f);
+		// TODO: Planet should not have specular. Add ability to turn on and off
+		// Setup the shader
+		nanoShader.use();
+
+		// Draw the planet
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
 		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
 		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
-		lightingShader.setMat4("model", model);
-		planet.Draw(lightingShader);
-
- 		nanoShader.use();
-		nanoShader.setVec3("viewPos", g_camera.Position);
-		nanoShader.setFloat("material.shininess", 32.0f);
-
-		LightUtils::SetupDirectionLight(&directionLight, &nanoShader, "dirLight");
-		for ( unsigned int i = 0; i < pointLightCount ; ++i )
-		{
-			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
-		}
-
-		spotLight.Position = g_camera.Position;
-		spotLight.Direction = g_camera.Front;
-		spotLight.AmbientIntensity = 0.5f;
- 		LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
-
-		nanoShader.setMat4("projection", projection);
-		nanoShader.setMat4("view", view);
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 		nanoShader.setMat4("model", model);
-		nanosuit.Draw(nanoShader);
+		planet.Draw(nanoShader);
 
-		glfwSwapBuffers(window);
+ 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		float currentFrame = glfwGetTime();
