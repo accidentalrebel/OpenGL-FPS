@@ -173,6 +173,7 @@ int main()
 
 		borderShader.use();
     borderShader.setInt("texture1", 0);
+		borderShader.setVec3("color", glm::vec3(0.04, 0.28, 0.26));
 
     // render loop
     // -----------
@@ -247,7 +248,6 @@ void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture,
 	model = glm::scale(model, glm::vec3(scale));
 	shader.setMat4("model", model);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(scale));

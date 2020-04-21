@@ -206,6 +206,7 @@ int main()
 
 	borderShader.use();
 	borderShader.setInt("texture1", 0); // TODO: We may be able to remove this.
+	borderShader.setVec3("color", glm::vec3(0.0f));
 
 	// MODELS SETUP
 	Model planet("assets/planet/planet.obj");
