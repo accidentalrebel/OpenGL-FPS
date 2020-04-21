@@ -190,8 +190,8 @@ int main()
 	boxShader.setInt("material.specular", 1);
 
 	nanoShader.use();
-	nanoShader.setInt("material.diffuse", 0);
-	nanoShader.setInt("material.specular", 1);
+	nanoShader.setInt("material.texture_diffuse1", 0);
+	nanoShader.setInt("material.texture_specular1", 1);
 
 	// render loop
 	// -----------
