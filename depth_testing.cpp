@@ -17,7 +17,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale);
 void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture);
-void drawGrass(Shader shader, unsigned int grassVAO, unsigned int grassTexture);
+void drawWindow(Shader shader, unsigned int windowVAO, unsigned int windowTexture);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -34,7 +34,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // TODO: Remove it from global, if still needed in the future.
-std::vector<glm::vec3> g_grassLocations = {
+std::vector<glm::vec3> g_windowLocations = {
 	glm::vec3(-1.5f, 0.0f, -0.48f),
 	glm::vec3( 1.5f, 0.0f, 0.51f),
 	glm::vec3( 0.0f, 0.0f, 0.7f),
@@ -181,11 +181,11 @@ int main()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glBindVertexArray(0);
 	// plane VAO
-	unsigned int grassVAO, grassVBO;
-	glGenVertexArrays(1, &grassVAO);
-	glGenBuffers(1, &grassVBO);
-	glBindVertexArray(grassVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+	unsigned int windowVAO, windowVBO;
+	glGenVertexArrays(1, &windowVAO);
+	glGenBuffers(1, &windowVBO);
+	glBindVertexArray(windowVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -197,7 +197,6 @@ int main()
 	// -------------
 	unsigned int cubeTexture  = Shader::LoadTextureFromFile("marble.jpg", "assets/textures");
 	unsigned int floorTexture = Shader::LoadTextureFromFile("metal.png", "assets/textures");
-	unsigned int grassTexture = Shader::LoadTextureFromFile("grass.png", "assets/textures");
 	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
 
 	// shader configuration
@@ -207,6 +206,11 @@ int main()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Sorting
+	// -------
+	/* std::map<float, glm::vec3> sorted; */
+	/* for (unsigned int i = 0 ; <  */
 
 	// render loop
 	// -----------
@@ -234,7 +238,7 @@ int main()
 		normalShader.setMat4("projection", projection);
 
 		drawFloor(normalShader, planeVAO, floorTexture);
-		drawGrass(normalShader, grassVAO, windowTexture);
+		drawWindow(normalShader, windowVAO, windowTexture);
 
 		drawTwoCubes(normalShader, cubeVAO, cubeTexture, 1.0f);
 
@@ -283,16 +287,16 @@ void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
 	glBindVertexArray(0);
 }
 
-void drawGrass(Shader shader, unsigned int grassVAO, unsigned int texture)
+void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
 {
 	glm::mat4 model;
 
-	for ( GLuint i = 0; i < g_grassLocations.size(); i++ )
+	for ( GLuint i = 0; i < g_windowLocations.size(); i++ )
 	{
 		model= glm::mat4(1.0f);
-		model = glm::translate(model, g_grassLocations[i]);
+		model = glm::translate(model, g_windowLocations[i]);
 	
-		glBindVertexArray(grassVAO);
+		glBindVertexArray(windowVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	
 		shader.setMat4("model", model);
