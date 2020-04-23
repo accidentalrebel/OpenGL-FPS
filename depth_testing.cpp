@@ -17,6 +17,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale);
 void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture);
+void drawGrass(Shader shader, unsigned int grassVAO, unsigned int grassTexture);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -136,6 +137,17 @@ int main()
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
     };
+		float quadVertices[] = {
+        // positions          // texture
+         1.0f, -0.5f,  1.0f,  1.0f, 0.0f,
+        -1.0f, -0.5f,  1.0f,  0.0f, 0.0f,
+        -1.0f, -0.5f, -1.0f,  0.0f, 1.0f,
+
+         1.0f, -0.5f,  1.0f,  1.0f, 0.0f,
+        -1.0f, -0.5f, -1.0f,  0.0f, 1.0f,
+         1.0f, -0.5f, -1.0f,  1.0f, 1.0f								
+    };
+
     // cube VAO
     unsigned int cubeVAO, cubeVBO;
     glGenVertexArrays(1, &cubeVAO);
@@ -160,11 +172,24 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
+		// plane VAO
+    unsigned int grassVAO, grassVBO;
+    glGenVertexArrays(1, &grassVAO);
+    glGenBuffers(1, &grassVBO);
+    glBindVertexArray(grassVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
 
     // load textures
     // -------------
     unsigned int cubeTexture  = Shader::LoadTextureFromFile("marble.jpg", "assets/textures");
     unsigned int floorTexture = Shader::LoadTextureFromFile("metal.png", "assets/textures");
+		unsigned int grassTexture = Shader::LoadTextureFromFile("grass.png", "assets/textures");
 
     // shader configuration
     // --------------------
@@ -200,6 +225,7 @@ int main()
 				glStencilMask(0x00);
 				normalShader.use();
 				drawFloor(normalShader, planeVAO, floorTexture);
+				drawGrass(normalShader, grassVAO, grassTexture);
 
 				glStencilFunc(GL_ALWAYS, 1, 0xFF);
 				glStencilMask(0xFF);
@@ -261,6 +287,21 @@ void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
 	glBindVertexArray(planeVAO);
 	glBindTexture(GL_TEXTURE_2D, floorTexture);
 	shader.setMat4("model", glm::mat4(1.0f));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void drawGrass(Shader shader, unsigned int grassVAO, unsigned int grassTexture)
+{
+	// grass
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(1.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.5f));
+	
+	glBindVertexArray(grassVAO);
+	glBindTexture(GL_TEXTURE_2D, grassTexture);
+	shader.setMat4("model", model);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
