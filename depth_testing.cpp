@@ -198,11 +198,15 @@ int main()
 	unsigned int cubeTexture  = Shader::LoadTextureFromFile("marble.jpg", "assets/textures");
 	unsigned int floorTexture = Shader::LoadTextureFromFile("metal.png", "assets/textures");
 	unsigned int grassTexture = Shader::LoadTextureFromFile("grass.png", "assets/textures");
+	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
 
 	// shader configuration
 	// --------------------
 	normalShader.use();
 	normalShader.setInt("texture1", 0);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// render loop
 	// -----------
@@ -230,7 +234,7 @@ int main()
 		normalShader.setMat4("projection", projection);
 
 		drawFloor(normalShader, planeVAO, floorTexture);
-		drawGrass(normalShader, grassVAO, grassTexture);
+		drawGrass(normalShader, grassVAO, windowTexture);
 
 		drawTwoCubes(normalShader, cubeVAO, cubeTexture, 1.0f);
 
@@ -279,7 +283,7 @@ void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
 	glBindVertexArray(0);
 }
 
-void drawGrass(Shader shader, unsigned int grassVAO, unsigned int grassTexture)
+void drawGrass(Shader shader, unsigned int grassVAO, unsigned int texture)
 {
 	glm::mat4 model;
 
@@ -289,7 +293,7 @@ void drawGrass(Shader shader, unsigned int grassVAO, unsigned int grassTexture)
 		model = glm::translate(model, g_grassLocations[i]);
 	
 		glBindVertexArray(grassVAO);
-		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		glBindTexture(GL_TEXTURE_2D, texture);
 	
 		shader.setMat4("model", model);
 	
