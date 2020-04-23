@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <map>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -17,7 +18,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale);
 void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture);
-void drawWindow(Shader shader, unsigned int windowVAO, unsigned int windowTexture);
+void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -207,11 +208,6 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Sorting
-	// -------
-	/* std::map<float, glm::vec3> sorted; */
-	/* for (unsigned int i = 0 ; <  */
-
 	// render loop
 	// -----------
 	while(!glfwWindowShouldClose(window))
@@ -238,10 +234,9 @@ int main()
 		normalShader.setMat4("projection", projection);
 
 		drawFloor(normalShader, planeVAO, floorTexture);
-		drawWindow(normalShader, windowVAO, windowTexture);
-
 		drawTwoCubes(normalShader, cubeVAO, cubeTexture, 1.0f);
-
+		drawWindow(normalShader, windowVAO, windowTexture);
+				
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
@@ -289,12 +284,21 @@ void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
 {
+	// Sorting the windows
+	// -------------------
+	std::map<float, glm::vec3> sorted;
+	for (unsigned int i = 0 ; i < g_windowLocations.size(); i++ )
+	{
+		float distance = glm::length(camera.Position - g_windowLocations[i]);
+		sorted[distance] = g_windowLocations[i];
+	}
+	
 	glm::mat4 model;
 
-	for ( GLuint i = 0; i < g_windowLocations.size(); i++ )
+	for ( std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 	{
 		model= glm::mat4(1.0f);
-		model = glm::translate(model, g_windowLocations[i]);
+		model = glm::translate(model, it->second);
 	
 		glBindVertexArray(windowVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
