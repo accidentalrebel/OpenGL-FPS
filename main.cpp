@@ -29,7 +29,8 @@ unsigned int getTileAt(unsigned int col, unsigned int row);
 void setTileAt(unsigned int col, unsigned int row, unsigned int value);
 void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO);
 
-void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
+void displayNanosuit(Model *nanosuit, Shader *shader);
+void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture);
 void drawPlanet(Model *planet, Shader *shader, float scale);
 void displayPlanet(Model *planet, Shader *, Shader *);
 
@@ -293,24 +294,12 @@ int main()
 		borderShader.setMat4("projection", projection);
 		borderShader.setMat4("view", view);
 
-		// Set up lights
 		setupLights(&lampShader, &nanoShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
 
-		// Draw nanosuit
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-
-		nanoShader.use();
-		nanoShader.setMat4("model", model);
-		
-		nanosuit.Draw(nanoShader);
-
+		displayNanosuit(&nanosuit, &nanoShader);
 		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
 		displayPlanet(&planet, &nanoShader, &borderShader);
-
-		simpleShader.use();
-		drawWindow(simpleShader, windowVAO, windowTexture);
+		displayWindows(&simpleShader, windowVAO, windowTexture);
 
  		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -327,6 +316,19 @@ int main()
 	glfwTerminate();
   return 0;
 }
+
+void displayNanosuit(Model *nanosuit, Shader *shader)
+{
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+	shader->use();
+	shader->setMat4("model", model);
+		
+	nanosuit->Draw(*shader);
+}
+
 void displayPlanet(Model *planet, Shader *planetShader, Shader *borderShader)
 {
 	// TODO: Planet should not have specular. Add ability to turn on and off
@@ -387,8 +389,10 @@ void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *direc
 	}
 }
 
-void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
+void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture)
 {
+	shader->use();
+	
 	// Sorting the windows
 	// -------------------
 	std::map<float, glm::vec3> sorted;
@@ -408,7 +412,7 @@ void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
 		glBindVertexArray(windowVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	
-		shader.setMat4("model", model);
+		shader->setMat4("model", model);
 	
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
