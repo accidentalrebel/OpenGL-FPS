@@ -51,8 +51,10 @@ const unsigned int g_mapRow = 8;
 
 bool g_isFlashLightOn = false;
 
+glm::vec3 g_windowLocations[6];
+
 unsigned int tileMap[][g_mapRow] = {
- 	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+ 	{ 3, 2, 2, 2, 2, 2, 2, 3 },
 	{ 1, 0, 0, 0, 0, 0, 0, 1 },
 	{ 1, 0, 0, 0, 0, 0, 0, 1 },
 	{ 1, 0, 0, 0, 1, 1, 0, 1 },
@@ -131,12 +133,12 @@ float quadVertices[] = {
 	1.0f,  0.5f,  0.0f,  1.0f,  0.0f								
 };
 
-std::vector<glm::vec3> g_windowLocations = {
-	glm::vec3 (1.0f, 0.0f, 1.0f),
-	glm::vec3 (2.0f, 0.0f, 2.0f),
-	glm::vec3 (3.0f, 0.0f, 3.0f),
-	glm::vec3 (4.0f, 0.0f, 4.0f),
-	glm::vec3 (5.0f, 0.0f, 5.0f)
+PointLight pointLights[] = {
+	PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+	PointLight(glm::vec3(2.0f, -0.4f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+	PointLight(glm::vec3(4.0f, -0.4f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+	PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
+	PointLight(glm::vec3(1.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 };
 
 int main()
@@ -225,14 +227,6 @@ int main()
 	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
 
 	// LIGHTS SETUP
-	PointLight pointLights[] = {
-		PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		PointLight(glm::vec3(3.0f, -0.4f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-		PointLight(glm::vec3(6.0f, -0.4f, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-		PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
-		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
-	};
-
 	unsigned int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.01f;
@@ -296,8 +290,8 @@ int main()
 
 		setupLights(&lampShader, &nanoShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
 
-		displayNanosuit(&nanosuit, &nanoShader);
 		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
+		displayNanosuit(&nanosuit, &nanoShader);
 		displayPlanet(&planet, &nanoShader, &borderShader);
 		displayWindows(&simpleShader, windowVAO, windowTexture);
 
@@ -357,7 +351,7 @@ void drawPlanet(Model *planet, Shader *shader, float scale)
 {
 	shader->use();
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
+	model = glm::translate(model, glm::vec3(3.0f, 0.5f, -2.0f));
 	model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f) * scale);
 	model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
 	shader->setMat4("model", model);
@@ -373,7 +367,8 @@ void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *direc
 	{
 		spotLight->Position = g_camera.Position;
 		spotLight->Direction = g_camera.Front;
-		spotLight->AmbientIntensity = 0.5f;
+		spotLight->AmbientIntensity = 0.1f;
+		spotLight->DiffuseIntensity = 0.8f;
 		spotLight->setup(objectShader, "spotLight");
 	}
 	else
@@ -396,7 +391,7 @@ void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture
 	// Sorting the windows
 	// -------------------
 	std::map<float, glm::vec3> sorted;
-	for (unsigned int i = 0 ; i < g_windowLocations.size(); i++ )
+	for (unsigned int i = 0 ; i < 6; i++ )
 	{
 		float distance = glm::length(g_camera.Position - g_windowLocations[i]);
 		sorted[distance] = g_windowLocations[i];
@@ -407,7 +402,7 @@ void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture
 	for ( std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 	{
 		model= glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(it->second.x - 0.5f, it->second.y, it->second.z - 0.48f));
+		model = glm::translate(model, glm::vec3(it->second.x - 0.5f, it->second.y, it->second.z + 0.52f));
 	
 		glBindVertexArray(windowVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -421,11 +416,14 @@ void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture
 
 void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsigned int specularMap)
 {
+	shader->use();
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, specularMap);
-	
+
+	unsigned int displayWindowIndex = 0;
 	glm::vec3 position;
 	for(unsigned int row = 0; row < g_mapRow ; row++)
 	{
@@ -437,6 +435,16 @@ void displayMap(Shader *shader, unsigned int VAO, unsigned int diffuseMap, unsig
 			{
 				//continue;
 				yPos = -1.0f;
+			}
+			else if ( tile == 2 )
+			{
+				g_windowLocations[displayWindowIndex] = glm::vec3(col, 0.0f, row);
+				displayWindowIndex++;
+				continue;
+			}
+			else if ( tile > 2 )
+			{
+				continue;
 			}
 
 			glm::mat4 model = glm::mat4(1.0f);
