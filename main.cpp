@@ -31,6 +31,7 @@ void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *direc
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
 void drawPlanet(Model *planet, Shader *shader, float scale);
+void displayPlanet(Model *planet, Shader *, Shader *);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
@@ -305,29 +306,8 @@ int main()
 		
 		nanosuit.Draw(nanoShader);
 
-		// Draw map
 		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
-		
-		// TODO: Planet should not have specular. Add ability to turn on and off
-		// We freeze the stencil
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
-		
-		// Draw the planet
-		drawPlanet(&planet, &nanoShader, 1.0f);
-
-		// We disable the stencil
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-
-		// Draw a bigger planet
-		drawPlanet(&planet, &borderShader, 1.05f);
-		
-		// Return stencil to normal
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glEnable(GL_DEPTH_TEST);
+		displayPlanet(&planet, &nanoShader, &borderShader);
 
 		simpleShader.use();
 		drawWindow(simpleShader, windowVAO, windowTexture);
@@ -346,6 +326,29 @@ int main()
 	
 	glfwTerminate();
   return 0;
+}
+void displayPlanet(Model *planet, Shader *planetShader, Shader *borderShader)
+{
+	// TODO: Planet should not have specular. Add ability to turn on and off
+	// We freeze the stencil
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilMask(0xFF);
+		
+	// Draw the planet
+	drawPlanet(planet, planetShader, 1.0f);
+
+	// We disable the stencil
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilMask(0x00);
+	glDisable(GL_DEPTH_TEST);
+
+	// Draw a bigger planet
+	drawPlanet(planet, borderShader, 1.05f);
+		
+	// Return stencil to normal
+	glStencilMask(0xFF);
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void drawPlanet(Model *planet, Shader *shader, float scale)
