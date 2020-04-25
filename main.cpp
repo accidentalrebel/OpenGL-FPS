@@ -30,6 +30,7 @@ void setTileAt(unsigned int col, unsigned int row, unsigned int value);
 void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO);
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
+void drawPlanet(Model *planet, Shader *shader, float scale);
 
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
@@ -306,38 +307,23 @@ int main()
 
 		// Draw map
 		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
-
+		
 		// TODO: Planet should not have specular. Add ability to turn on and off
-		// Setup the shader
-		nanoShader.use();
-
 		// We freeze the stencil
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
 		
 		// Draw the planet
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
-		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
-		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
-		nanoShader.setMat4("model", model);
-		planet.Draw(nanoShader);
+		drawPlanet(&planet, &nanoShader, 1.0f);
 
 		// We disable the stencil
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
 
-		// TODO: Make a draw planet function
-		borderShader.use();
+		// Draw a bigger planet
+		drawPlanet(&planet, &borderShader, 1.05f);
 		
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
-		model = glm::scale(model, glm::vec3(0.31f, 0.31f, 0.31f));
-		model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
-		borderShader.setMat4("model", model);
-		planet.Draw(borderShader);
-
 		// Return stencil to normal
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -360,6 +346,17 @@ int main()
 	
 	glfwTerminate();
   return 0;
+}
+
+void drawPlanet(Model *planet, Shader *shader, float scale)
+{
+	shader->use();
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
+	model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f) * scale);
+	model = glm::rotate(model, (float)glfwGetTime() / 2, glm::vec3(0.3f, 1.0f, 0.0f));
+	shader->setMat4("model", model);
+	planet->Draw(*shader);
 }
 
 void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO)
