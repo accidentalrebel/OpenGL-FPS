@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "../shader.h"
 
 class DirectionLight
 {
@@ -16,5 +17,13 @@ class DirectionLight
 	{
 		Direction = direction;
 		Color = color;
+	}
+
+	void setup(Shader *shader, const std::string &uniformName)
+	{
+		shader->setVec3(uniformName + ".direction", Direction);
+		shader->setVec3(uniformName + ".ambient", Color * AmbientIntensity);
+		shader->setVec3(uniformName + ".diffuse", Color * DiffuseIntensity);
+		shader->setVec3(uniformName + ".specular", Color * SpecularIntensity);
 	}
 };

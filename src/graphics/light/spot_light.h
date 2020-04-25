@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "../shader.h"
 
 class SpotLight
 {
@@ -26,4 +27,19 @@ class SpotLight
 		CutOff = cutOff;
 		OuterCutOff = outerCutOff;
   }
+
+	void setup(Shader* shader, const std::string &uniformName)
+	{
+		shader->setVec3(uniformName + ".position", Position);
+		shader->setVec3(uniformName + ".direction", Direction);
+		shader->setFloat(uniformName + ".cutOff", glm::cos(glm::radians(CutOff)));
+		shader->setFloat(uniformName + ".outerCutOff", glm::cos(glm::radians(OuterCutOff)));
+		shader->setVec3(uniformName + ".ambient", Color * AmbientIntensity);
+		shader->setVec3(uniformName + ".diffuse", Color * DiffuseIntensity);
+		shader->setVec3(uniformName + ".specular", Color * SpecularIntensity);
+		shader->setFloat(uniformName + ".constant", Constant);
+    shader->setFloat(uniformName + ".linear", Linear);
+    shader->setFloat(uniformName + ".quadratic", Quadratic);
+		shader->setBool("isSpotLightSetup", true);
+	}
 };

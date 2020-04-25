@@ -10,7 +10,9 @@
 #include "src/graphics/camera.h"
 #include "src/graphics/shader.h"
 #include "src/graphics/model.h"
-#include "src/graphics/light/light_utils.h"
+#include "src/graphics/light/direction_light.h"
+#include "src/graphics/light/spot_light.h"
+#include "src/graphics/light/point_light.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -378,21 +380,20 @@ int main()
 void setupLights(Shader *shader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight)
 {
 	shader->use();
-	LightUtils::SetupDirectionLight(directionLight, shader, "dirLight");
+	directionLight->setup(shader, "dirLight");
 		
 	for ( unsigned int i = 0; i < pointLightCount ; ++i )
-		LightUtils::SetupPointLight(&pointLights[i], shader, "pointLights[" + std::to_string(i) + "]");
+		pointLights[i].setup(shader, "pointLights[" + std::to_string(i) + "]");
 
 	if ( g_isFlashLightOn )
 	{
 		spotLight->Position = g_camera.Position;
 		spotLight->Direction = g_camera.Front;
 		spotLight->AmbientIntensity = 0.5f;
-		LightUtils::SetupSpotLight(spotLight, shader, "spotLight");
+		spotLight->setup(shader, "spotLight");
 	}
 	else
 	{
-		// TODO: Should also have an option to disable point lights if needed.
 		shader->setBool("isSpotLightSetup", false);
 	}
 }
