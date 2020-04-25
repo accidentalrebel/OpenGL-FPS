@@ -134,11 +134,11 @@ float quadVertices[] = {
 };
 
 PointLight pointLights[] = {
+	PointLight(glm::vec3(1.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 1.0f)),
 	PointLight(glm::vec3(1.5f, -0.4f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
 	PointLight(glm::vec3(2.0f, -0.4f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 	PointLight(glm::vec3(4.0f, -0.4f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 	PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
-	PointLight(glm::vec3(1.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 };
 
 int main()
@@ -271,6 +271,11 @@ int main()
 		glm::mat4 view = g_camera.GetViewMatrix();
 		
 		// Shaders setup
+		lightingShader.use();
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", view);
+		lightingShader.setVec3("viewPos", g_camera.Position);
+		
 		nanoShader.use();
 		nanoShader.setMat4("projection", projection);
 		nanoShader.setMat4("view", view);
@@ -288,11 +293,11 @@ int main()
 		borderShader.setMat4("projection", projection);
 		borderShader.setMat4("view", view);
 
-		setupLights(&lampShader, &nanoShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
+		setupLights(&lampShader, &lightingShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
 
-		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
+		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 		displayNanosuit(&nanosuit, &nanoShader);
-		displayPlanet(&planet, &nanoShader, &borderShader);
+		displayPlanet(&planet, &lightingShader, &borderShader);
 		displayWindows(&simpleShader, windowVAO, windowTexture);
 
  		glfwSwapBuffers(window);
