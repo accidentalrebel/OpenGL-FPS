@@ -25,6 +25,7 @@ glm::vec3 castRay(glm::vec3, glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 unsigned int getTileAt(unsigned int col, unsigned int row);
 void setTileAt(unsigned int col, unsigned int row, unsigned int value);
+void setupLights(Shader *shader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight);
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
 
@@ -227,7 +228,7 @@ int main()
 		PointLight(glm::vec3(3.0f, -0.4f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 	};
 
-	int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
+	unsigned int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.01f;
 	directionLight.DiffuseIntensity = 0.2f;
@@ -289,24 +290,7 @@ int main()
 		borderShader.setMat4("view", view);
 
 		// Set up lights
-		nanoShader.use();
-		LightUtils::SetupDirectionLight(&directionLight, &nanoShader, "dirLight");
-		
-		for ( unsigned int i = 0; i < pointLightCount ; ++i )
-			LightUtils::SetupPointLight(&pointLights[i], &nanoShader, "pointLights[" + std::to_string(i) + "]");
-
-		if ( g_isFlashLightOn )
-		{
-			spotLight.Position = g_camera.Position;
-			spotLight.Direction = g_camera.Front;
-			spotLight.AmbientIntensity = 0.5f;
-			LightUtils::SetupSpotLight(&spotLight, &nanoShader, "spotLight");
-		}
-		else
-		{
-			// TODO: Should also have an option to disable point lights if needed.
-			nanoShader.setBool("isSpotLightSetup", false);
-		}
+		setupLights(&nanoShader, &directionLight, pointLights, pointLightCount, &spotLight);
 
 		// Draw nanosuit
 		glm::mat4 model = glm::mat4(1.0f);
@@ -389,6 +373,28 @@ int main()
 	
 	glfwTerminate();
   return 0;
+}
+
+void setupLights(Shader *shader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight)
+{
+	shader->use();
+	LightUtils::SetupDirectionLight(directionLight, shader, "dirLight");
+		
+	for ( unsigned int i = 0; i < pointLightCount ; ++i )
+		LightUtils::SetupPointLight(&pointLights[i], shader, "pointLights[" + std::to_string(i) + "]");
+
+	if ( g_isFlashLightOn )
+	{
+		spotLight->Position = g_camera.Position;
+		spotLight->Direction = g_camera.Front;
+		spotLight->AmbientIntensity = 0.5f;
+		LightUtils::SetupSpotLight(spotLight, shader, "spotLight");
+	}
+	else
+	{
+		// TODO: Should also have an option to disable point lights if needed.
+		shader->setBool("isSpotLightSetup", false);
+	}
 }
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
