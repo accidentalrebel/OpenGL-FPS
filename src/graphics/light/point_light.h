@@ -23,14 +23,38 @@ class PointLight
 		Color = color;
   }
 
-	void setup(Shader *shader, const std::string &uniformName)
+	void use(Shader *objectShader, const std::string &uniformName)
 	{
-    shader->setVec3(uniformName + ".position", Position);
-    shader->setVec3(uniformName + ".ambient", Color * AmbientIntensity);
-    shader->setVec3(uniformName + ".diffuse", Color * DiffuseIntensity);
-    shader->setVec3(uniformName + ".specular", Color * SpecularIntensity);
-    shader->setFloat(uniformName + ".constant", Constant);
-    shader->setFloat(uniformName + ".linear", Linear);
-    shader->setFloat(uniformName + ".quadratic", Quadratic);
+		objectShader->use();
+    objectShader->setVec3(uniformName + ".position", Position);
+    objectShader->setVec3(uniformName + ".ambient", Color * AmbientIntensity);
+    objectShader->setVec3(uniformName + ".diffuse", Color * DiffuseIntensity);
+    objectShader->setVec3(uniformName + ".specular", Color * SpecularIntensity);
+    objectShader->setFloat(uniformName + ".constant", Constant);
+    objectShader->setFloat(uniformName + ".linear", Linear);
+    objectShader->setFloat(uniformName + ".quadratic", Quadratic);
 	}
+
+	void setup(unsigned int vao)
+	{
+		this->VAO = vao;
+	}
+
+	void draw(Shader *lampShader)
+	{
+		lampShader->use();
+		
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, Position);
+		model = glm::scale(model, glm::vec3(0.2f));
+		
+		lampShader->setMat4("model", model);
+		lampShader->setVec3("lightColor", Color);
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+
+ private:
+	unsigned int VAO;
 };

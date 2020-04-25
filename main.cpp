@@ -27,7 +27,7 @@ glm::vec3 castRay(glm::vec3, glm::vec3, float);
 glm::vec3 handleObjectAtPos(glm::vec3);
 unsigned int getTileAt(unsigned int col, unsigned int row);
 void setTileAt(unsigned int col, unsigned int row, unsigned int value);
-void setupLights(Shader *shader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight);
+void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO);
 
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
 
@@ -292,35 +292,20 @@ int main()
 		borderShader.setMat4("view", view);
 
 		// Set up lights
-		setupLights(&nanoShader, &directionLight, pointLights, pointLightCount, &spotLight);
+		setupLights(&lampShader, &nanoShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
 
 		// Draw nanosuit
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		nanoShader.use();
 		nanoShader.setMat4("model", model);
+		
 		nanosuit.Draw(nanoShader);
 
 		// Draw map
 		displayMap(&nanoShader, VAO, diffuseMap, specularMap);
-
-		// Shader sutp
-		lampShader.use();
-
-		// TODO: Move lighting to a separate function
-		// Draw lamps
-		for(unsigned int i = 0; i < pointLightCount; i++)
-		{
-			lampShader.setVec3("lightColor", pointLights[i].Color * 0.8f);
-			
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLights[i].Position);
-			model = glm::scale(model, glm::vec3(0.2f));
-			lampShader.setMat4("model", model);
-
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
 
 		// TODO: Planet should not have specular. Add ability to turn on and off
 		// Setup the shader
@@ -377,24 +362,28 @@ int main()
   return 0;
 }
 
-void setupLights(Shader *shader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight)
+void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO)
 {
-	shader->use();
-	directionLight->setup(shader, "dirLight");
-		
-	for ( unsigned int i = 0; i < pointLightCount ; ++i )
-		pointLights[i].setup(shader, "pointLights[" + std::to_string(i) + "]");
+	objectShader->use();
+	directionLight->setup(objectShader, "dirLight");
 
 	if ( g_isFlashLightOn )
 	{
 		spotLight->Position = g_camera.Position;
 		spotLight->Direction = g_camera.Front;
 		spotLight->AmbientIntensity = 0.5f;
-		spotLight->setup(shader, "spotLight");
+		spotLight->setup(objectShader, "spotLight");
 	}
 	else
 	{
-		shader->setBool("isSpotLightSetup", false);
+		objectShader->setBool("isSpotLightSetup", false);
+	}
+	
+	for ( unsigned int i = 0; i < pointLightCount ; ++i )
+	{
+		pointLights[i].use(objectShader, "pointLights[" + std::to_string(i) + "]");
+		pointLights[i].setup(VAO);
+		pointLights[i].draw(lampShader);
 	}
 }
 
