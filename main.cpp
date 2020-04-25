@@ -161,6 +161,11 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 	glEnable(GL_DEPTH_TEST);
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -235,10 +240,10 @@ int main()
 	lightingShader.setInt("material.texture_diffuse1", 0);
 	lightingShader.setInt("material.texture_specular1", 1);
 
-	// TODO: Nano shader should be the new lighting shader
 	nanoShader.use();
 	nanoShader.setInt("material.texture_diffuse1", 0);
 	nanoShader.setInt("material.texture_specular1", 1);
+	nanoShader.setFloat("material.shininess", 32.0f);
 
 	borderShader.use();
 	borderShader.setInt("texture1", 0); // TODO: We may be able to remove this.
@@ -251,9 +256,6 @@ int main()
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -261,20 +263,33 @@ int main()
 		// --------------------------------
 		// Drawing
 		// --------------------------------
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-
 		glStencilMask(0x00);
 
-		// Shader setup
+		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 view = g_camera.GetViewMatrix();
+		
+		// Shaders setup
 		nanoShader.use();
+		nanoShader.setMat4("projection", projection);
+		nanoShader.setMat4("view", view);
 		nanoShader.setVec3("viewPos", g_camera.Position);
-		nanoShader.setFloat("material.shininess", 32.0f);
 
-		// Lights setup
+		lampShader.use();
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", view);
+
+		simpleShader.use();
+		simpleShader.setMat4("projection", projection);
+		simpleShader.setMat4("view", view);
+
+		borderShader.use();
+		borderShader.setMat4("projection", projection);
+		borderShader.setMat4("view", view);
+
+		// Set up lights
+		nanoShader.use();
 		LightUtils::SetupDirectionLight(&directionLight, &nanoShader, "dirLight");
 		
 		for ( unsigned int i = 0; i < pointLightCount ; ++i )
@@ -294,13 +309,6 @@ int main()
 		}
 
 		// Draw nanosuit
-		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
-		glm::mat4 view = g_camera.GetViewMatrix();
-		nanoShader.setMat4("projection", projection);
-		nanoShader.setMat4("view", view);
-		simpleShader.setMat4("projection", projection);
-		simpleShader.setMat4("view", view);
-		
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, -0.5f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
@@ -312,8 +320,6 @@ int main()
 
 		// Shader sutp
 		lampShader.use();
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", view);
 
 		// TODO: Move lighting to a separate function
 		// Draw lamps
@@ -353,8 +359,6 @@ int main()
 
 		// TODO: Make a draw planet function
 		borderShader.use();
-		borderShader.setMat4("projection", projection);
-		borderShader.setMat4("view", view);
 		
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0f, 0.5f, 1.5f));
@@ -369,8 +373,6 @@ int main()
 		glEnable(GL_DEPTH_TEST);
 
 		simpleShader.use();
-		simpleShader.setMat4("projection", projection);
-		simpleShader.setMat4("view", view);
 		drawWindow(simpleShader, windowVAO, windowTexture);
 
  		glfwSwapBuffers(window);
