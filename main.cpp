@@ -34,6 +34,9 @@ void displayWindows(Shader *shader, unsigned int quadVAO, unsigned int texture);
 void drawPlanet(Model *planet, Shader *shader, float scale);
 void displayPlanet(Model *planet, Shader *, Shader *);
 
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+
 Camera g_camera(glm::vec3(2.0f, 0.0f, 4.0f));
 float lastX = 400.0f, lastY = 300.0f;
 float g_lastKeyPressed = 0;
@@ -148,7 +151,7 @@ int main()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
   if ( window == NULL )
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -163,7 +166,7 @@ int main()
 		return -1;
 	}
 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
@@ -179,16 +182,16 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	// Shaders
+	// SHADERS
+	// -------
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
 	Shader nanoShader("shaders/test-nano.vs", "shaders/test-nano.fs");
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 	Shader borderShader("shaders/depth_testing.vs", "shaders/border.fs");
 	Shader simpleShader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
 	
-	// --------------------------------
-	// Configuration
-	// --------------------------------
+	// CONFIGURATION
+	// -------------
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -223,12 +226,45 @@ int main()
 	glBindVertexArray(0);
 
 	// TEXTURES SETUP
+	// --------------
 	stbi_set_flip_vertically_on_load(true);
 	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
 	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets");
 	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
 
+	// FRAMEBUFFER SETUP
+	// -----------------
+	unsigned int frameBuffer;
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+	unsigned int texColorBuffer;
+	glGenTextures(1, &texColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	// LIGHTS SETUP
+	// ------------
 	unsigned int pointLightCount = sizeof(pointLights) / sizeof(pointLights[0]);
 	DirectionLight directionLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, -1.0f, 0.5f));
 	directionLight.AmbientIntensity = 0.01f;
@@ -237,6 +273,7 @@ int main()
 	SpotLight spotLight(glm::vec3(1.0f), 12.5f, 15.0f);
 
 	// SHADERS SETUP
+	// -------------
 	lightingShader.use();
 	lightingShader.setInt("pointLightCount", pointLightCount);
 	lightingShader.setInt("material.texture_diffuse1", 0);
@@ -255,6 +292,7 @@ int main()
 	simpleShader.setInt("texture1", 0);
 
 	// MODELS SETUP
+	// ------------
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
@@ -269,7 +307,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 		glStencilMask(0x00);
 
-		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
 		
 		// Shaders setup
