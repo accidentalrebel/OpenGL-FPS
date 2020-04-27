@@ -279,6 +279,9 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		fbShader.use();
+		glm::mat4 model = glm::mat4(1.0f);
+		// model = glm::scale(model, glm::vec3(0.5f));
+		fbShader.setMat4("model", model);
 		glBindVertexArray(quadVAO);
 		glDisable(GL_DEPTH_TEST);
 		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
