@@ -16,6 +16,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void drawScene(Shader normalShader, unsigned int containerTexture, unsigned int floorTexture, unsigned int planeVAO, unsigned int cubeVAO, bool isMirrored);
 void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale);
 void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture);
 void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture);
@@ -223,6 +224,8 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Attach to bounded framebuffer object
@@ -257,30 +260,19 @@ int main()
 		// -----
 		processInput(window);
 
-		// render
-		// ------
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glEnable(GL_DEPTH_TEST);
+		drawScene(normalShader, containerTexture, floorTexture, planeVAO, cubeVAO, false);
 		
-		normalShader.use();
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		normalShader.setMat4("view", view);
-		normalShader.setMat4("projection", projection);
-
-		drawFloor(normalShader, planeVAO, floorTexture);
-		drawTwoCubes(normalShader, cubeVAO, containerTexture, 1.0f);
-		// drawWindow(normalShader, quadVAO, windowTexture);
+		// render custom framebuffer
+		// -------------------------
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+		drawScene(normalShader, containerTexture, floorTexture, planeVAO, cubeVAO, true);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
 
 		fbShader.use();
 		glm::mat4 model = glm::mat4(1.0f);
-		// model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::translate(model, glm::vec3(0, 0.5f, 0));
+		model = glm::scale(model, glm::vec3(0.5f));
 		fbShader.setMat4("model", model);
 		glBindVertexArray(quadVAO);
 		glDisable(GL_DEPTH_TEST);
@@ -302,6 +294,34 @@ int main()
 
 	glfwTerminate();
 	return 0;
+}
+
+void drawScene(Shader normalShader, unsigned int containerTexture, unsigned int floorTexture, unsigned int planeVAO, unsigned int cubeVAO, bool isMirrored)
+{
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glEnable(GL_DEPTH_TEST);
+		
+	normalShader.use();
+
+	if( isMirrored )
+	{
+		camera.Front = glm::normalize(-camera.Front);
+	}
+
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	normalShader.setMat4("view", view);
+	normalShader.setMat4("projection", projection);
+
+	drawFloor(normalShader, planeVAO, floorTexture);
+	drawTwoCubes(normalShader, cubeVAO, containerTexture, 1.0f);
+
+	if( isMirrored )
+	{
+		camera.Front = glm::normalize(-camera.Front);
+	}
+	// drawWindow(normalShader, quadVAO, windowTexture);
 }
 
 void drawTwoCubes(Shader shader, unsigned int cubeVAO, unsigned int cubeTexture, float scale)
