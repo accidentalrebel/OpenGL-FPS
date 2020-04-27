@@ -30,7 +30,7 @@ void setTileAt(unsigned int col, unsigned int row, unsigned int value);
 void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO);
 
 void displayNanosuit(Model *nanosuit, Shader *shader);
-void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture);
+void displayWindows(Shader *shader, unsigned int quadVAO, unsigned int texture);
 void drawPlanet(Model *planet, Shader *shader, float scale);
 void displayPlanet(Model *planet, Shader *, Shader *);
 
@@ -122,16 +122,16 @@ float vertices[] = {
 	-0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,  0.0f, 0.0f  // bottom-left
 };
 
-float quadVertices[] = {
-	// positions          // texture
-	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-	0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+float quadVertices[] = {  
+	// positions   // texCoords
+	-0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.0f, 0.0f,
+	0.5f, -0.5f,  1.0f, 0.0f,
 
-	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-	1.0f,  0.5f,  0.0f,  1.0f,  0.0f								
-};
+	-0.5f,  0.5f,  0.0f, 1.0f,
+	0.5f, -0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f,  1.0f, 1.0f
+};	
 
 PointLight pointLights[] = {
 	PointLight(glm::vec3(1.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 1.0f)),
@@ -210,16 +210,16 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Quad vertices
-	unsigned int windowVAO, windowVBO;
-	glGenVertexArrays(1, &windowVAO);
-	glGenBuffers(1, &windowVBO);
-	glBindVertexArray(windowVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+	unsigned int quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glBindVertexArray(0);
 
 	// TEXTURES SETUP
@@ -300,7 +300,7 @@ int main()
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 		displayNanosuit(&nanosuit, &nanoShader);
 		displayPlanet(&planet, &lightingShader, &borderShader);
-		displayWindows(&simpleShader, windowVAO, windowTexture);
+		displayWindows(&simpleShader, quadVAO, windowTexture);
 
  		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -391,7 +391,7 @@ void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *direc
 	}
 }
 
-void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture)
+void displayWindows(Shader *shader, unsigned int quadVAO, unsigned int texture)
 {
 	shader->use();
 	
@@ -409,9 +409,9 @@ void displayWindows(Shader *shader, unsigned int windowVAO, unsigned int texture
 	for ( std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 	{
 		model= glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(it->second.x - 0.5f, it->second.y, it->second.z + 0.52f));
+		model = glm::translate(model, glm::vec3(it->second.x, it->second.y, it->second.z + 0.52f));
 	
-		glBindVertexArray(windowVAO);
+		glBindVertexArray(quadVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	
 		shader->setMat4("model", model);
