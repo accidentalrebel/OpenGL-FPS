@@ -174,8 +174,10 @@ int main()
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+	glEnable(GL_CULL_FACE);
+	
 	glEnable(GL_DEPTH_TEST);
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Shaders
 	Shader lightingShader("shaders/color.vs", "shaders/color.fs");
