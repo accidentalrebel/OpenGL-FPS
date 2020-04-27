@@ -89,6 +89,7 @@ int main()
 	// build and compile shaders
 	// -------------------------
 	Shader normalShader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
+	Shader fbShader("shaders/framebuffer.vs", "shaders/framebuffer.fs");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -146,16 +147,17 @@ int main()
 		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
 		5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
 	};
-	float quadVertices[] = {
-		// positions          // texture
-		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
 
-		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-		1.0f,  0.5f,  0.0f,  1.0f,  0.0f								
-	};
+	float quadVertices[] = {  
+    // positions   // texCoords
+    -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f, 0.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+
+    -1.0f,  1.0f,  0.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+		1.0f,  1.0f,  1.0f, 1.0f
+	};	
 
 	// cube VAO
 	unsigned int cubeVAO, cubeVBO;
@@ -182,16 +184,16 @@ int main()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glBindVertexArray(0);
 	// plane VAO
-	unsigned int windowVAO, windowVBO;
-	glGenVertexArrays(1, &windowVAO);
-	glGenBuffers(1, &windowVBO);
-	glBindVertexArray(windowVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+	unsigned int quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glBindVertexArray(0);
 
 	// load textures
@@ -218,7 +220,7 @@ int main()
 	unsigned int texColorBuffer;
 	glGenTextures(1, &texColorBuffer);
 	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -229,7 +231,7 @@ int main()
 	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
@@ -237,7 +239,9 @@ int main()
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// render loop
 	// -----------
@@ -255,9 +259,11 @@ int main()
 
 		// render
 		// ------
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+		glEnable(GL_DEPTH_TEST);
+		
 		normalShader.use();
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -266,7 +272,17 @@ int main()
 
 		drawFloor(normalShader, planeVAO, floorTexture);
 		drawTwoCubes(normalShader, cubeVAO, containerTexture, 1.0f);
-		// drawWindow(normalShader, windowVAO, windowTexture);
+		// drawWindow(normalShader, quadVAO, windowTexture);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		fbShader.use();
+		glBindVertexArray(quadVAO);
+		glDisable(GL_DEPTH_TEST);
+		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 				
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -313,7 +329,7 @@ void drawFloor(Shader shader, unsigned int planeVAO, unsigned int floorTexture)
 	glBindVertexArray(0);
 }
 
-void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
+void drawWindow(Shader shader, unsigned int quadVAO, unsigned int texture)
 {
 	// Sorting the windows
 	// -------------------
@@ -331,7 +347,7 @@ void drawWindow(Shader shader, unsigned int windowVAO, unsigned int texture)
 		model= glm::mat4(1.0f);
 		model = glm::translate(model, it->second);
 	
-		glBindVertexArray(windowVAO);
+		glBindVertexArray(quadVAO);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	
 		shader.setMat4("model", model);
