@@ -189,6 +189,7 @@ int main()
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 	Shader borderShader("shaders/depth_testing.vs", "shaders/border.fs");
 	Shader simpleShader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
+	Shader frameBufferShader("shaders/framebuffer.vs", "shaders/framebuffer.fs");
 	
 	// CONFIGURATION
 	// -------------
@@ -229,7 +230,7 @@ int main()
 	// --------------
 	stbi_set_flip_vertically_on_load(true);
 	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
-	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets");
+	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets/textures");
 	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
 
 	// FRAMEBUFFER SETUP
@@ -303,11 +304,13 @@ int main()
 		// --------------------------------
 		// Drawing
 		// --------------------------------
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-		glStencilMask(0x00);
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // | GL_STENCIL_BUFFER_BIT );
+		glEnable(GL_DEPTH_TEST);
+		// glStencilMask(0x00);
 
-		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
 		
 		// Shaders setup
@@ -337,8 +340,24 @@ int main()
 
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 		displayNanosuit(&nanosuit, &nanoShader);
-		displayPlanet(&planet, &lightingShader, &borderShader);
+		// displayPlanet(&planet, &lightingShader, &borderShader);
 		displayWindows(&simpleShader, quadVAO, windowTexture);
+
+		// Default buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
+		frameBufferShader.use();
+		glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(0, 0.5f, 0));
+		model = glm::scale(model, glm::vec3(2.0f));
+		frameBufferShader.setMat4("model", model);
+
+		glBindVertexArray(quadVAO);
+		glDisable(GL_DEPTH_TEST);
+		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);  
 
  		glfwSwapBuffers(window);
 		glfwPollEvents();
