@@ -306,10 +306,10 @@ int main()
 		// Drawing
 		// --------------------------------
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // | GL_STENCIL_BUFFER_BIT );
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 		glEnable(GL_DEPTH_TEST);
-		// glStencilMask(0x00);
+ 		glStencilMask(0x00);
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
@@ -341,7 +341,7 @@ int main()
 
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 		displayNanosuit(&nanosuit, &nanoShader);
-		// displayPlanet(&planet, &lightingShader, &borderShader);
+		displayPlanet(&planet, &lightingShader, &borderShader);
 		displayWindows(&simpleShader, quadVAO, windowTexture);
 
 		// Default buffer
