@@ -53,6 +53,7 @@ const unsigned int g_mapCol = 8;
 const unsigned int g_mapRow = 8;
 
 bool g_isFlashLightOn = false;
+unsigned int g_postProcessor = 0;
 
 glm::vec3 g_windowLocations[6];
 
@@ -353,6 +354,7 @@ int main()
 		//model = glm::translate(model, glm::vec3(0, 0.5f, 0));
 		model = glm::scale(model, glm::vec3(2.0f));
 		frameBufferShader.setMat4("model", model);
+		frameBufferShader.setInt("postProcessor", g_postProcessor);
 
 		glBindVertexArray(quadVAO);
 		glDisable(GL_DEPTH_TEST);
@@ -672,16 +674,17 @@ void processInput(GLFWwindow *window)
 		g_lastKeyPressed = 0;
 	}
 
-	if ( glfwGetKey(window, GLFW_KEY_F ) == GLFW_PRESS)
+	if ( glfwGetKey(window, GLFW_KEY_P ) == GLFW_PRESS)
 	{
-		g_lastKeyPressed = GLFW_KEY_F;
+		g_lastKeyPressed = GLFW_KEY_P;
 	}
-	else if ( g_lastKeyPressed == GLFW_KEY_F && glfwGetKey(window, GLFW_KEY_F ) == GLFW_RELEASE)
+	else if ( g_lastKeyPressed == GLFW_KEY_P && glfwGetKey(window, GLFW_KEY_P ) == GLFW_RELEASE)
 	{
-		if(g_isFlashLightOn )
-			g_isFlashLightOn = false;
-		else
-			g_isFlashLightOn = true;
+		g_postProcessor++;
+		if ( g_postProcessor > 6) {
+			g_postProcessor = 0;
+		}
+		cout << "Postprocessor is " << to_string(g_postProcessor) << endl;
 		g_lastKeyPressed = 0;
 	}
 }
