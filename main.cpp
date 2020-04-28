@@ -28,6 +28,7 @@ glm::vec3 handleObjectAtPos(glm::vec3);
 unsigned int getTileAt(unsigned int col, unsigned int row);
 void setTileAt(unsigned int col, unsigned int row, unsigned int value);
 void setupLights(Shader *lampShader, Shader *objectShader, DirectionLight *directionLight, PointLight pointLights[], unsigned int pointLightCount, SpotLight *spotLight, unsigned int VAO);
+unsigned int loadCubemap(vector<std::string> faces);
 
 void displayNanosuit(Model *nanosuit, Shader *shader);
 void displayWindows(Shader *shader, unsigned int quadVAO, unsigned int texture);
@@ -135,7 +136,52 @@ float quadVertices[] = {
 	-0.5f,  0.5f,  0.0f, 1.0f,
 	0.5f, -0.5f,  1.0f, 0.0f,
 	0.5f,  0.5f,  1.0f, 1.0f
-};	
+};
+
+float skyboxVertices[] = {
+	// positions          
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f
+};
 
 PointLight pointLights[] = {
 	PointLight(glm::vec3(1.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 1.0f)),
@@ -143,6 +189,16 @@ PointLight pointLights[] = {
 	PointLight(glm::vec3(2.0f, -0.4f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 	PointLight(glm::vec3(4.0f, -0.4f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 	PointLight(glm::vec3(6.0f, -0.4f, 6.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
+};
+
+vector<std::string> faces
+{
+	"assets/textures/skybox/right.jpg",
+	"assets/textures/skybox/left.jpg",
+	"assets/textures/skybox/top.jpg",
+	"assets/textures/skybox/bottom.jpg",
+	"assets/textures/skybox/front.jpg",
+	"assets/textures/skybox/back.jpg"
 };
 
 int main()
@@ -190,6 +246,7 @@ int main()
 	Shader lampShader("shaders/lamp.vs", "shaders/lamp.fs");
 	Shader borderShader("shaders/depth_testing.vs", "shaders/border.fs");
 	Shader simpleShader("shaders/depth_testing.vs", "shaders/depth_testing.fs");
+	Shader skyboxShader("shaders/skybox.vs", "shaders/skybox.fs");
 	Shader frameBufferShader("shaders/framebuffer.vs", "shaders/framebuffer.fs");
 	
 	// CONFIGURATION
@@ -227,12 +284,22 @@ int main()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glBindVertexArray(0);
 
+	unsigned int skyboxVAO, skyboxVBO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3* sizeof(float), (void*)0);
+
 	// TEXTURES SETUP
 	// --------------
 	stbi_set_flip_vertically_on_load(true);
 	unsigned int diffuseMap = Shader::LoadTextureFromFile("tile.png", "assets");
 	unsigned int specularMap = Shader::LoadTextureFromFile("container2_specular.png", "assets/textures");
 	unsigned int windowTexture = Shader::LoadTextureFromFile("blending_transparent_window.png", "assets/textures");
+	unsigned int skyboxTexture = loadCubemap(faces);	
 
 	// FRAMEBUFFER SETUP
 	// -----------------
@@ -293,11 +360,15 @@ int main()
 	simpleShader.use();
 	simpleShader.setInt("texture1", 0);
 
+	skyboxShader.use();
+	skyboxShader.setInt("skybox", 0);
+
 	// MODELS SETUP
 	// ------------
 	Model planet("assets/planet/planet.obj");
 	Model nanosuit("assets/nanosuit/nanosuit.obj");
 
+	
 	while(!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -313,7 +384,7 @@ int main()
 
 		glm::mat4 projection = glm::perspective(glm::radians(g_camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = g_camera.GetViewMatrix();
-		
+
 		// Shaders setup
 		lightingShader.use();
 		lightingShader.setMat4("projection", projection);
@@ -337,12 +408,31 @@ int main()
 		borderShader.setMat4("projection", projection);
 		borderShader.setMat4("view", view);
 
+		skyboxShader.use();
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", view);
+
 		setupLights(&lampShader, &lightingShader, &directionLight, pointLights, pointLightCount, &spotLight, VAO);
 
 		displayMap(&lightingShader, VAO, diffuseMap, specularMap);
 		displayNanosuit(&nanosuit, &nanoShader);
 		displayPlanet(&planet, &lightingShader, &borderShader);
 		displayWindows(&simpleShader, quadVAO, windowTexture);
+
+		// Skybox
+		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+		skyboxShader.use();
+		view = glm::mat4(glm::mat3(g_camera.GetViewMatrix())); // remove translation from the view matrix
+		skyboxShader.setMat4("view", view);
+		skyboxShader.setMat4("projection", projection);
+
+		// skybox cube
+		glBindVertexArray(skyboxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glDepthFunc(GL_LESS); // set depth function back to default		
 
 		// Default buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -801,4 +891,36 @@ void getPositionFromTileIndex(unsigned int index, glm::vec3 *position)
 	position->z = floor(index / g_mapCol);
 	position->y = 0;
 	position->x = index - (position->z * g_mapCol);
+}
+
+unsigned int loadCubemap(vector<std::string> faces)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+									 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+				);
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
 }
